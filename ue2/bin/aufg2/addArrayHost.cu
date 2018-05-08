@@ -72,6 +72,30 @@ void addArrayHost(float *A, float *B, float *C, const int N)
         C[idx] = A[idx] + B[idx];
 }
 
+__global__ void addArrayGPU(float *A, float *B, float *C, const int nElem)
+{
+   if (nElem < 1024) 
+   {
+   C[threadIdx.x] = A[threadIdx.x] + B[threadIdx.x];  
+   }
+   
+   else 
+   {
+        int multOfThreads = nElem/1024;
+        (int) (nElem % 1024);
+        
+        for (int k=0; k<multOfThreads; k++)
+        {
+         if (k*threadIdx.x > nElem) 
+         {
+             break;
+         }
+         C[threadIdx.x+1023*k] = A[threadIdx.x+1023*k] + B[threadIdx.x+1023*k];     
+        }    
+    }
+       
+}    
+
 
 int main(int argc, char **argv)
 {
@@ -82,7 +106,7 @@ int main(int argc, char **argv)
     CHECK(cudaSetDevice(dev));
 
     // Groesse der arrays festlegen
-    int nElem = 1024;
+    int nElem = 2048;
     if (argc>1)
       nElem = atoi(argv[1]);
     printf("Array-Groesse: %d\n", nElem);
@@ -109,13 +133,27 @@ int main(int argc, char **argv)
     CHECK(cudaMalloc((float**)&d_B, nBytes));
     CHECK(cudaMalloc((float**)&d_C, nBytes));
 
+    // Starte Zeitmessung Latenz Host->Device
+    double t_start = seconds();
+    
     // kopieren Host -> Device mit cudaMemcpy
     CHECK(cudaMemcpy(d_A, h_A, nBytes, cudaMemcpyHostToDevice));
     CHECK(cudaMemcpy(d_B, h_B, nBytes, cudaMemcpyHostToDevice));
     CHECK(cudaMemcpy(d_C, gpuRef, nBytes, cudaMemcpyHostToDevice));
+    
+    // Beende Zeitmessung Latenz Host->Device
+    double t_end = seconds();
+    
+    double t_DH = t_end-t_start;
+    printf("Kopieren Host -> Device: %f s\n", t_DH);
 
+    // Berechne Durchsatz aus Latenz und Groesse der Arrays
+    float durchsatz = 3*nElem*sizeof(float)/t_DH*1.e-9; // GByte/s
+    //printf(" Groesse float %lu \n", sizeof(float));
+    printf("Durchsatz: %f GB/s\n", durchsatz);
+    
     // zu programmieren:
-    //addArrayGPU<<<1, nElem>>>(d_A, d_B, d_C, nElem);
+    addArrayGPU<<<1, nElem>>>(d_A, d_B, d_C, nElem);
 
     // kopieren Host -> Device mit cudaMemcpy
     CHECK(cudaMemcpy(gpuRef, d_C, nBytes, cudaMemcpyDeviceToHost));
