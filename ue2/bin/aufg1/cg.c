@@ -175,28 +175,25 @@ void laplace_2d(double *w, double *v) {
 }
 
 double scalar_product(double *u, double *v) {
-  int n = (Nx + 2)*(Ny + 2);
   int i;
 
   double w = 0;
 
   for (i=0; i<npts; i++) {
-    printf("%d, %f, %f, %f\n", i, u, v, w);
     w += u[i] * v[i];
   }
 
   return w;
 }
 
-void vector_addition(double *v,double *u, double *w) {
+void vector_addition(double *v, double *u, double *w) {
     int i;
     for (i=0; i<npts; i++) {
         w[i] += u[i] + v[i];
-    }      
+    }
 }
 
 void scale_vector(double prefactor, double *v, double *w) {
-  int n = (Nx + 2)*(Ny + 2);
   int i;
 
   for (i=0; i<npts; i++) {
@@ -205,53 +202,100 @@ void scale_vector(double prefactor, double *v, double *w) {
 }
 
 void conjugate_gradient_laplace(double *x, double *b) {
-  /* int i = 0; */
 
   double tol = 1e-15;
-  double alpha, beta;
 
   int nBytes=npts*sizeof(double);
 
-  /* double* x =(double*)malloc(npts*sizeof(double)); /\* residuum *\/ */
-  double* r =(double*)malloc(npts*sizeof(double)); /* residuum */
-  double* p =(double*)malloc(npts*sizeof(double)); /* residuum */
-  double* Ap =(double*)malloc(npts*sizeof(double)); /* residuum */
-
+  double pAp;
   double rr_old, rr_new;
 
+  double alpha, beta;
+
+  double* x_new =(double*)malloc(npts*sizeof(double));
+  double* r = (double *) malloc(npts * sizeof(double));
+  double* r_new = (double *) malloc(npts * sizeof(double));
+  double* p = (double *) malloc(npts * sizeof(double));
+  double* p_new = (double *) malloc(npts * sizeof(double));
+
+  double* Ap = (double *) malloc(npts * sizeof(double));
+  double* alpha_p = (double *) malloc(npts * sizeof(double));
+  double* neg_alpha_Ap = (double *) malloc(npts * sizeof(double));
+  double* beta_p = (double *) malloc(npts * sizeof(double));
+
   /* memset(x, 0, nBytes); */
+  memset(x_new, 0, nBytes);
   memset(r, 0, nBytes);
+  memset(r_new, 0, nBytes);
   memset(p, 0, nBytes);
+  memset(p_new, 0, nBytes);
+
   memset(Ap, 0, nBytes);
+  memset(alpha_p, 0, nBytes);
+  memset(neg_alpha_Ap, 0, nBytes);
+  memset(beta_p, 0, nBytes);
 
-  r = b;
-  print_vector("r",r,1);
-  /* *p = *r; */
+  memcpy(r, b, nBytes);
+  memcpy(p, r, nBytes);
 
-  rr_old = norm_sqr(r);
+  rr_old = scalar_product(r, r);
 
+  int j = 0;
+  for (;;j++) {
 
-  int j;
-//  /* for (j=0; *rr_old<tol; j++) { */
-//  for (j=0; j<1000; j++) {
+    memset(x_new, 0, nBytes);
+    memset(r_new, 0, nBytes);
+    memset(p_new, 0, nBytes);
 
-//    /* /\* memset(x, 0, nBytes); *\/ */
-//      /* memset(r, 0, nBytes); */
-      /* memset(p, 0, nBytes); */
-      /* memset(Ap, 0, nBytes); */
-      /* printf("%d\n", j); */
-      /* abbruch bed */
+    memset(Ap, 0, nBytes);
+    memset(alpha_p, 0, nBytes);
+    memset(neg_alpha_Ap, 0, nBytes);
+    memset(beta_p, 0, nBytes);
 
-//    if (j > 100) {
-  //      printf("iter > 100\n");
+    laplace_2d(Ap, p);          /* write A*p into Ap */
+    pAp = scalar_product(p, Ap); /* write p*A*p into pAp */
+    alpha = rr_old / pAp;
 
-    //    break;
-   //   }
- // }
-  /* free(x); */
+    scale_vector(alpha, p, alpha_p);
+    scale_vector(-1.0*alpha, Ap, neg_alpha_Ap);
+
+    vector_addition(x, alpha_p, x_new);
+    memcpy(x, x_new, nBytes);
+    vector_addition(r, neg_alpha_Ap, r_new);
+    memcpy(r, r_new, nBytes);
+
+    rr_new = scalar_product(r, r);
+
+    if (j == 100) {
+      printf("\ntoo many steps: j = 100\n");
+      break;
+    }
+
+    if (rr_new < tol) {
+      printf("\ntol (%e < %e) reached after %d steps\n", rr_new, tol, j);
+      break;
+    }
+
+    beta = rr_new / rr_old;
+    rr_old = rr_new;
+
+    scale_vector(beta, p, beta_p);
+    scale_vector(beta, p, beta_p);
+
+    vector_addition(r, beta_p, p_new);
+    memcpy(p, p_new, nBytes);
+
+  }
+
   free(r);
   free(p);
+  free(x_new);
+  free(r_new);
+  free(p_new);
   free(Ap);
+  free(alpha_p);
+  free(neg_alpha_Ap);
+  free(beta_p);
 }
 
 int main(int argc, char **argv)
@@ -274,11 +318,11 @@ int main(int argc, char **argv)
    nBytes=npts*sizeof(double);
 
    // Speicher für Vektoren allozieren
-   w=(double*)malloc(npts*sizeof(double));
-   v=(double*)malloc(npts*sizeof(double));
+   w = (double *) malloc(npts * sizeof(double));
+   v = (double *) malloc(npts * sizeof(double));
 
    double* x;
-   x=(double*)malloc(npts*sizeof(double));
+   x = (double *) malloc(npts * sizeof(double));
    memset(x, 0, nBytes);
 
    // auf Null setzen
@@ -302,6 +346,7 @@ int main(int argc, char **argv)
 
    conjugate_gradient_laplace(x, v);
 
+   print_vector("x", x, 1);
    free(active);
    free(w);
    free(v);
