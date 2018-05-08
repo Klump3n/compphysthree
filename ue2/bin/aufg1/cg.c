@@ -188,6 +188,13 @@ double scalar_product(double *u, double *v) {
   return w;
 }
 
+void vector_addition(double *v,double *u, double *w) {
+    int i;
+    for (i=0; i<npts; i++) {
+        w[i] += u[i] + v[i];
+    }      
+}
+
 void scale_vector(double prefactor, double *v, double *w) {
   int n = (Nx + 2)*(Ny + 2);
   int i;
