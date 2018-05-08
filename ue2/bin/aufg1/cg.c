@@ -130,7 +130,11 @@ void print_vector(char *name, double *p, int flag)
 }
 
 /*
-  Die geforderte Funktion
+ * laplace_2d(double *w, double *v)
+ *
+ * Calculates the product A*v for a vector v and writes the result into w.
+ * A is a laplacian.
+ *
  */
 void laplace_2d(double *w, double *v) {
 
@@ -174,29 +178,45 @@ void laplace_2d(double *w, double *v) {
   }
 }
 
+/*
+ * scalar_product(double *u, double *v)
+ *
+ * Calculates the standard scalar product of two vectors u and v and returns
+ * the result.
+ *
+ */
 double scalar_product(double *u, double *v) {
-  int n = (Nx + 2)*(Ny + 2);
   int i;
-
   double w = 0;
 
   for (i=0; i<npts; i++) {
-    printf("%d, %f, %f, %f\n", i, u, v, w);
     w += u[i] * v[i];
   }
 
   return w;
 }
 
-void vector_addition(double *v,double *u, double *w) {
+/*
+ * vector_addition(double *v, double *u, double *w)
+ *
+ * Adds two vectors u and v together and writes the result into w.
+ *
+ */
+void vector_addition(double *u, double *v, double *w) {
     int i;
+
     for (i=0; i<npts; i++) {
         w[i] += u[i] + v[i];
-    }      
+    }
 }
 
+/*
+ * scale_vector(double prefactor, double *v, double *w)
+ *
+ * Scales a vector v by a prefactor and writes the result into w.
+ *
+ */
 void scale_vector(double prefactor, double *v, double *w) {
-  int n = (Nx + 2)*(Ny + 2);
   int i;
 
   for (i=0; i<npts; i++) {
@@ -204,54 +224,117 @@ void scale_vector(double prefactor, double *v, double *w) {
   }
 }
 
+/*
+ * conjugate_gradient_laplace(double *x, double *b)
+ *
+ * Calculates the result vector x for a set of boundary conditions b.
+ *
+ */
 void conjugate_gradient_laplace(double *x, double *b) {
-  /* int i = 0; */
 
+  /* size of vectors */
+  int nBytes=npts*sizeof(double);
+  int nMax = npts;
+
+  /* requested accuracy */
   double tol = 1e-15;
+
+  /* allocate doubles for the results of the scalar products */
+  double rr_old, rr_new;
+  double pAp;
+
   double alpha, beta;
 
-  int nBytes=npts*sizeof(double);
+  /* allocate space for the vector calculations */
+  double* r = (double *) malloc(npts * sizeof(double));
+  double* p = (double *) malloc(npts * sizeof(double));
+  double* x_new = (double *) malloc(npts * sizeof(double));
+  double* r_new = (double *) malloc(npts * sizeof(double));
+  double* p_new = (double *) malloc(npts * sizeof(double));
+  double* Ap = (double *) malloc(npts * sizeof(double));
+  double* alpha_p = (double *) malloc(npts * sizeof(double));
+  double* neg_alpha_Ap = (double *) malloc(npts * sizeof(double));
+  double* beta_p = (double *) malloc(npts * sizeof(double));
 
-  /* double* x =(double*)malloc(npts*sizeof(double)); /\* residuum *\/ */
-  double* r =(double*)malloc(npts*sizeof(double)); /* residuum */
-  double* p =(double*)malloc(npts*sizeof(double)); /* residuum */
-  double* Ap =(double*)malloc(npts*sizeof(double)); /* residuum */
-
-  double rr_old, rr_new;
-
-  /* memset(x, 0, nBytes); */
+  /* set the initialized vectors to 0.0 */
   memset(r, 0, nBytes);
   memset(p, 0, nBytes);
+  memset(x_new, 0, nBytes);
+  memset(r_new, 0, nBytes);
+  memset(p_new, 0, nBytes);
   memset(Ap, 0, nBytes);
+  memset(alpha_p, 0, nBytes);
+  memset(neg_alpha_Ap, 0, nBytes);
+  memset(beta_p, 0, nBytes);
 
-  r = b;
-  print_vector("r",r,1);
-  /* *p = *r; */
+  /* set the values for r_0 and p_0  */
+  memcpy(r, b, nBytes);
+  memcpy(p, r, nBytes);
 
-  rr_old = norm_sqr(r);
+  /* calculate the first scalar product */
+  rr_old = scalar_product(r, r);
 
+  int j = 0;
+  /* loop until we break */
+  for (;;j++) {
 
-  int j;
-//  /* for (j=0; *rr_old<tol; j++) { */
-//  for (j=0; j<1000; j++) {
+    /* reset the space for the vector calculations */
+    memset(x_new, 0, nBytes);
+    memset(r_new, 0, nBytes);
+    memset(p_new, 0, nBytes);
+    memset(Ap, 0, nBytes);
+    memset(alpha_p, 0, nBytes);
+    memset(neg_alpha_Ap, 0, nBytes);
+    memset(beta_p, 0, nBytes);
 
-//    /* /\* memset(x, 0, nBytes); *\/ */
-//      /* memset(r, 0, nBytes); */
-      /* memset(p, 0, nBytes); */
-      /* memset(Ap, 0, nBytes); */
-      /* printf("%d\n", j); */
-      /* abbruch bed */
+    /* prepare some vectors */
+    laplace_2d(Ap, p);           /* write A*p into Ap */
+    pAp = scalar_product(p, Ap); /* write p*A*p into pAp */
+    alpha = rr_old / pAp;
 
-//    if (j > 100) {
-  //      printf("iter > 100\n");
+    /* calculate the new x */
+    scale_vector(alpha, p, alpha_p);
+    vector_addition(x, alpha_p, x_new);
+    memcpy(x, x_new, nBytes);
 
-    //    break;
-   //   }
- // }
-  /* free(x); */
+    /* calculate the new r */
+    scale_vector(-1.0*alpha, Ap, neg_alpha_Ap);
+    vector_addition(r, neg_alpha_Ap, r_new);
+    memcpy(r, r_new, nBytes);
+
+    rr_new = scalar_product(r, r);
+
+    /* if we need more than nMax steps something is borked */
+    if (j == nMax) {
+      printf("\ntoo many steps: j = %d\n", j);
+      break;
+    }
+
+    /* break once we reach the accuracy we want */
+    if (rr_new < tol) {
+      printf("\ntol (%e < %e) reached after %d steps\n", rr_new, tol, j);
+      break;
+    }
+
+    beta = rr_new / rr_old;
+    rr_old = rr_new;
+
+    /* calculate the new p */
+    scale_vector(beta, p, beta_p);
+    vector_addition(r, beta_p, p_new);
+    memcpy(p, p_new, nBytes);
+
+  }
+
   free(r);
   free(p);
+  free(x_new);
+  free(r_new);
+  free(p_new);
   free(Ap);
+  free(alpha_p);
+  free(neg_alpha_Ap);
+  free(beta_p);
 }
 
 int main(int argc, char **argv)
@@ -274,11 +357,11 @@ int main(int argc, char **argv)
    nBytes=npts*sizeof(double);
 
    // Speicher für Vektoren allozieren
-   w=(double*)malloc(npts*sizeof(double));
-   v=(double*)malloc(npts*sizeof(double));
+   w = (double *) malloc(npts * sizeof(double));
+   v = (double *) malloc(npts * sizeof(double));
 
    double* x;
-   x=(double*)malloc(npts*sizeof(double));
+   x = (double *) malloc(npts * sizeof(double));
    memset(x, 0, nBytes);
 
    // auf Null setzen
@@ -302,6 +385,7 @@ int main(int argc, char **argv)
 
    conjugate_gradient_laplace(x, v);
 
+   print_vector("x", x, 1);
    free(active);
    free(w);
    free(v);
