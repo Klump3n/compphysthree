@@ -74,26 +74,20 @@ void addArrayHost(float *A, float *B, float *C, const int N)
 
 __global__ void addArrayGPU(float *A, float *B, float *C, const int nElem)
 {
-   if (nElem < 1024) 
-   {
-   C[threadIdx.x] = A[threadIdx.x] + B[threadIdx.x];  
-   }
-   
-   else 
-   {
-        int multOfThreads = nElem/1024;
-        (int) (nElem % 1024);
+        /*int multOfThreads = nElem/1024;
+        //(int) (nElem % 1024);
         
         for (int k=0; k<multOfThreads; k++)
         {
-         if (k*threadIdx.x > nElem) 
+         //printf("threadIdx: %i", threadIdx.x);
+         if (1023*k+threadIdx.x > nElem-1) 
          {
              break;
          }
          C[threadIdx.x+1023*k] = A[threadIdx.x+1023*k] + B[threadIdx.x+1023*k];     
         }    
-    }
-       
+        */
+       C[threadIdx.x] = A[threadIdx.x] + B[threadIdx.x];
 }    
 
 
@@ -106,7 +100,7 @@ int main(int argc, char **argv)
     CHECK(cudaSetDevice(dev));
 
     // Groesse der arrays festlegen
-    int nElem = 2048;
+    int nElem = 1024;
     if (argc>1)
       nElem = atoi(argv[1]);
     printf("Array-Groesse: %d\n", nElem);
@@ -134,7 +128,7 @@ int main(int argc, char **argv)
     CHECK(cudaMalloc((float**)&d_C, nBytes));
 
     // Starte Zeitmessung Latenz Host->Device
-    double t_start = seconds();
+    double t_HDstart = seconds();
     
     // kopieren Host -> Device mit cudaMemcpy
     CHECK(cudaMemcpy(d_A, h_A, nBytes, cudaMemcpyHostToDevice));
@@ -142,21 +136,41 @@ int main(int argc, char **argv)
     CHECK(cudaMemcpy(d_C, gpuRef, nBytes, cudaMemcpyHostToDevice));
     
     // Beende Zeitmessung Latenz Host->Device
-    double t_end = seconds();
+    double t_HDend = seconds();
     
-    double t_DH = t_end-t_start;
-    printf("Kopieren Host -> Device: %f s\n", t_DH);
+    double t_HD = (t_HDend-t_HDstart)*1.e+3;
+    printf("Kopieren Host -> Device: %f ms\n", t_HD);
 
-    // Berechne Durchsatz aus Latenz und Groesse der Arrays
-    float durchsatz = 3*nElem*sizeof(float)/t_DH*1.e-9; // GByte/s
+    // Berechne Bandbreite aus Latenz und Groesse der Arrays
+    float bandbreite = 3*nElem*sizeof(float)/t_HD*1.e-9*1.e+3; // GByte/s
     //printf(" Groesse float %lu \n", sizeof(float));
-    printf("Durchsatz: %f GB/s\n", durchsatz);
+    printf("Bandbreite: %f GB/s\n", bandbreite);
+    
+    //Starte Zeitmessung Durchsatz Device
+    double t_DurchD_start = seconds();
     
     // zu programmieren:
     addArrayGPU<<<1, nElem>>>(d_A, d_B, d_C, nElem);
+    cudaDeviceSynchronize();
+    
+    //Beende Zeitmessung Durchsatz Device
+    double t_DurchD_end = seconds();
+    double t_DurchD = t_DurchD_end - t_DurchD_start;
+    
+    double durchsatz = nElem*1.e-9 /t_DurchD;
+    printf("Durchsatz in %f Gflops \n", durchsatz);
 
-    // kopieren Host -> Device mit cudaMemcpy
+    // Starte Zeitmessung Latenz Device->Host
+    double t_DHstart = seconds();
+    
+    // kopieren Device -> Host mit cudaMemcpy
     CHECK(cudaMemcpy(gpuRef, d_C, nBytes, cudaMemcpyDeviceToHost));
+    
+    // Beende Zeitmessung Latenz Device->Host
+    double t_DHend = seconds();
+    
+    double t_DH = (t_DHend-t_DHstart)*1.e+3;
+    printf("Kopieren Device -> Host: %f ms\n", t_DH);
 
     // Addition auf dem Host
     addArrayHost(h_A, h_B, hostRef, nElem);
