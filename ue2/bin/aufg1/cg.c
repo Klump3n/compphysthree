@@ -228,27 +228,26 @@ void conjugate_gradient_laplace(double *x, double *b) {
   print_vector("r",r,1);
   /* *p = *r; */
 
-  printf("%f\n", norm_sqr(r));
-  rr_old = scalar_product(r, r);
+  rr_old = norm_sqr(r);
+
 
   int j;
-  /* for (j=0; *rr_old<tol; j++) { */
-  for (j=0; j<1000; j++) {
+//  /* for (j=0; *rr_old<tol; j++) { */
+//  for (j=0; j<1000; j++) {
 
-    /* /\* memset(x, 0, nBytes); *\/ */
-      /* memset(r, 0, nBytes); */
+//    /* /\* memset(x, 0, nBytes); *\/ */
+//      /* memset(r, 0, nBytes); */
       /* memset(p, 0, nBytes); */
       /* memset(Ap, 0, nBytes); */
       /* printf("%d\n", j); */
       /* abbruch bed */
 
-    if (j > 100) {
-        printf("iter > 100\n");
+//    if (j > 100) {
+  //      printf("iter > 100\n");
 
-        break;
-      }
-  }
-
+    //    break;
+   //   }
+ // }
   /* free(x); */
   free(r);
   free(p);
@@ -301,7 +300,7 @@ int main(int argc, char **argv)
    laplace_2d(w, v);
    print_vector("w", w, 1);
 
-   /* conjugate_gradient_laplace(x, v); */
+   conjugate_gradient_laplace(x, v);
 
    free(active);
    free(w);
