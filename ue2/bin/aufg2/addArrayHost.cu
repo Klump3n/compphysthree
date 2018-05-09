@@ -74,25 +74,13 @@ void addArrayHost(float *A, float *B, float *C, const int N)
 
 __global__ void addArrayGPU(float *A, float *B, float *C)
 {
-  int idx = blockDim.x * blockIdx.x + threadIdx.x;
-  C[idx] = A[idx] + B[idx];
+  int idx = blockDim.x * blockIdx.x + threadIdx.x; 
+  C[idx] = A[idx] + B[idx]; //Insgesamt führt diese Funktion 3 flop aus
 }
 
-
-int main(int argc, char **argv)
+void oneRun(float *latenzHDArr, float *latenzDHArr, float *bandbreiteHDArr,float *bandbreiteDHArr, float *durchsatzArr,const int idx,const int nElem)
 {
-    printf("%s Starting...\n", argv[0]);
-
-    // Device auswaehlen
-    int dev = 0;
-    CHECK(cudaSetDevice(dev));
-
-    // Groesse der arrays festlegen
-    int nElem = 1024;
-    if (argc>1)
-      nElem = atoi(argv[1]);
     printf("Array-Groesse: %d\n", nElem);
-
     // Host-Speicher allozieren mit malloc
     size_t nBytes = nElem * sizeof(float);
 
@@ -126,13 +114,13 @@ int main(int argc, char **argv)
     // Beende Zeitmessung Latenz Host->Device
     double t_HDend = seconds();
     
-    double t_HD = (t_HDend-t_HDstart)*1.e+3;
-    printf("Kopieren Host -> Device: %f ms\n", t_HD);
+    latenzHDArr[idx]= (t_HDend-t_HDstart)*1.e+3;
+    printf("Latenz Host -> Device: %f ms\n", latenzHDArr[idx]);
 
     // Berechne Bandbreite aus Latenz und Groesse der Arrays
-    float bandbreite = 3*nElem*sizeof(float)/t_HD*1.e-9*1.e+3; // GByte/s
+    bandbreiteHDArr[idx] = 3*nElem*sizeof(float)/latenzHDArr[idx]*1.e-9*1.e+3; // GByte/s
     //printf(" Groesse float %lu \n", sizeof(float));
-    printf("Bandbreite: %f GB/s\n", bandbreite);
+    printf("Bandbreite Host -> Device: %f GB/s\n", bandbreiteHDArr[idx]);
     
     //Starte Zeitmessung Durchsatz Device
     double t_DurchD_start = seconds();
@@ -149,8 +137,8 @@ int main(int argc, char **argv)
     double t_DurchD_end = seconds();
     double t_DurchD = t_DurchD_end - t_DurchD_start;
     
-    double durchsatz = nElem*1.e-9 /t_DurchD;
-    printf("Durchsatz in %f Gflops \n", durchsatz);
+    durchsatzArr[idx] = 3*nElem*1.e-9 /t_DurchD; //Faktor wegen 3 flop
+    printf("Durchsatz in %f Gflops \n", durchsatzArr[idx]);
 
     // Starte Zeitmessung Latenz Device->Host
     double t_DHstart = seconds();
@@ -161,8 +149,13 @@ int main(int argc, char **argv)
     // Beende Zeitmessung Latenz Device->Host
     double t_DHend = seconds();
     
-    double t_DH = (t_DHend-t_DHstart)*1.e+3;
-    printf("Kopieren Device -> Host: %f ms\n", t_DH);
+    latenzDHArr[idx] = (t_DHend-t_DHstart)*1.e+3;
+    printf("Latenz Device -> Host: %f ms\n", latenzDHArr[idx]);
+
+    // Berechne Bandbreite aus Latenz und Groesse der Arrays
+    bandbreiteDHArr[idx] = 3*nElem*sizeof(float)/latenzDHArr[idx]*1.e-9*1.e+3; // GByte/s
+    //printf(" Groesse float %lu \n", sizeof(float));
+    printf("Bandbreite Host -> Device: %f GB/s\n", bandbreiteDHArr[idx]);
 
     // Addition auf dem Host
     addArrayHost(h_A, h_B, hostRef, nElem);
@@ -182,5 +175,39 @@ int main(int argc, char **argv)
     free(gpuRef);
 
     CHECK(cudaDeviceReset());
+}
+
+int main(int argc, char **argv)
+{
+    printf("%s Starting...\n", argv[0]);
+
+    // Device auswaehlen
+    int dev = 0;
+    CHECK(cudaSetDevice(dev));
+
+    // Groesse der arrays festlegen
+    int nElem = 1024;
+    if (argc>1)
+      nElem = atoi(argv[1]);
+
+    int nElemStart = 1000;
+    int nElemMax = 10000;
+    int nElemIncr = 1000;
+    int idx = 0;
+    size_t nBytes= nElemMax * sizeof(float);
+    float *latenzHDArr, *latenzDHArr, *bandbreiteHDArr, *bandbreiteDHArr, *durchsatzArr;
+
+    latenzHDArr = (float *)malloc(nBytes);
+    latenzDHArr = (float *)malloc(nBytes);
+    bandbreiteHDArr = (float *)malloc(nBytes);
+    bandbreiteDHArr = (float *)malloc(nBytes);
+    durchsatzArr = (float *)malloc(nBytes);
+
+    for(nElem=nElemStart; nElem<nElemMax+1; nElem+=nElemIncr)
+    {
+    oneRun(latenzHDArr, latenzDHArr, bandbreiteHDArr, bandbreiteDHArr, durchsatzArr,idx , nElem);
+    idx++;
+    }
+
     return(0);
 }
