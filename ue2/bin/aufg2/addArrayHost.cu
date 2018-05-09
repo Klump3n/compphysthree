@@ -155,7 +155,7 @@ void oneRun(float *latenzHDArr, float *latenzDHArr, float *bandbreiteHDArr,float
     // Berechne Bandbreite aus Latenz und Groesse der Arrays
     bandbreiteDHArr[idx] = 3*nElem*sizeof(float)/latenzDHArr[idx]*1.e-9*1.e+3; // GByte/s
     //printf(" Groesse float %lu \n", sizeof(float));
-    printf("Bandbreite Host -> Device: %f GB/s\n", bandbreiteDHArr[idx]);
+    printf("Bandbreite Device -> Host: %f GB/s\n", bandbreiteDHArr[idx]);
 
     // Addition auf dem Host
     addArrayHost(h_A, h_B, hostRef, nElem);
@@ -190,9 +190,9 @@ int main(int argc, char **argv)
     if (argc>1)
       nElem = atoi(argv[1]);
 
-    int nElemStart = 1000;
-    int nElemMax = 10000;
-    int nElemIncr = 1000;
+    int nElemStart = 60000000;
+    int nElemMax   = 60000000;
+    int nElemIncr  = 50000000;
     int idx = 0;
     size_t nBytes= nElemMax * sizeof(float);
     float *latenzHDArr, *latenzDHArr, *bandbreiteHDArr, *bandbreiteDHArr, *durchsatzArr;
