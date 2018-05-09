@@ -138,7 +138,9 @@ int main(int argc, char **argv)
     double t_DurchD_start = seconds();
     
     /* blockSize * threadSize HAS to be larger than nElem */
-    int blockSize = 3;
+    /* int blockSize = 3; */
+    int blockSize = (int) (nElem / 1024) + 1;
+    printf("Blocksize %d\n", blockSize);
     int threadSize = 1024;
     addArrayGPU<<<blockSize, threadSize>>>(d_A, d_B, d_C);
     cudaDeviceSynchronize();
