@@ -72,23 +72,11 @@ void addArrayHost(float *A, float *B, float *C, const int N)
         C[idx] = A[idx] + B[idx];
 }
 
-__global__ void addArrayGPU(float *A, float *B, float *C, const int nElem)
+__global__ void addArrayGPU(float *A, float *B, float *C)
 {
-        /*int multOfThreads = nElem/1024;
-        //(int) (nElem % 1024);
-        
-        for (int k=0; k<multOfThreads; k++)
-        {
-         //printf("threadIdx: %i", threadIdx.x);
-         if (1023*k+threadIdx.x > nElem-1) 
-         {
-             break;
-         }
-         C[threadIdx.x+1023*k] = A[threadIdx.x+1023*k] + B[threadIdx.x+1023*k];     
-        }    
-        */
-       C[threadIdx.x] = A[threadIdx.x] + B[threadIdx.x];
-}    
+  int idx = blockDim.x * blockIdx.x + threadIdx.x;
+  C[idx] = A[idx] + B[idx];
+}
 
 
 int main(int argc, char **argv)
@@ -149,8 +137,10 @@ int main(int argc, char **argv)
     //Starte Zeitmessung Durchsatz Device
     double t_DurchD_start = seconds();
     
-    // zu programmieren:
-    addArrayGPU<<<1, nElem>>>(d_A, d_B, d_C, nElem);
+    /* blockSize * threadSize HAS to be larger than nElem */
+    int blockSize = 3;
+    int threadSize = 1024;
+    addArrayGPU<<<blockSize, threadSize>>>(d_A, d_B, d_C);
     cudaDeviceSynchronize();
     
     //Beende Zeitmessung Durchsatz Device
