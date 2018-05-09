@@ -190,9 +190,9 @@ int main(int argc, char **argv)
     if (argc>1)
       nElem = atoi(argv[1]);
 
-    int nElemStart = 60000000;
+    int nElemStart = 10000000;
     int nElemMax   = 60000000;
-    int nElemIncr  = 50000000;
+    int nElemIncr  = 5000000;
     int idx = 0;
     size_t nBytes= nElemMax * sizeof(float);
     float *latenzHDArr, *latenzDHArr, *bandbreiteHDArr, *bandbreiteDHArr, *durchsatzArr;
