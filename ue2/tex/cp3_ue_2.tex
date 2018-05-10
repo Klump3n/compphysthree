@@ -311,10 +311,27 @@ Implementierung des letzten Übungsblattes.
 	Führt man die Datei aus, die aus addArrayHost.cu kompiliert wird, erhält man
 	als Output die oben genannten Größen für alle Arraygrößen. Diesen Outputs kann
 	man entnehmen, dass für die getesteten Arrays unterschiedlicher Dimension
-	bereits recht konstante Werte für Durchsatz und Bandbreite erreicht werden.
+	bereits recht konstante Werte für Durchsatz und Bandbreite erreicht werden.\\
+	Ein Beispieloutput für das größte Array:
 
 	\begin{verbatim}
-		test
+	Array-Groesse: 60000000
+	Latenz Host -> Device: 109.087944 ms
+	Bandbreite Host -> Device: 6.600180 GB/s
+	Durchsatz Device: 18.711113 Gflops 
+	Latenz Device -> Host: 42.725086 ms
+	Bandbreite Device -> Host: 16.851927 GB/s
+	Durchsatz Host: 0.393355 Gflops 
+	Arrays stimmen ueberein.
 	\end{verbatim}
+ 
+	Die Latenz sowohl für den Kopiervorgang zwischen Host und Device und zwischen 
+	Device und Host scheinen linear zu steigen, was zu erwarten ist. Die Latenz und die Bandbreite
+	ist für die Vorgänge Device $\rightarrow$ Host ca. um den Faktor $2.5$ besser als für die umgekehrten
+	Vorgänge.\\
+	Die Bandbreite für Host $\rightarrow$ Device liegt bei ungefähr 6.6 GB/s.\\
+	Die Bandbreite für Device  $\rightarrow$ Host liegt bei ungefähr 16.0 GB/s.\\
+	Der Durchsatz vom Device liegt bei ungefähr 18 Gflops.\\
+	Der Durchsatz vom Host liegt bei ungefähr 0.4 Gflops.\\
 
 \end{document}
