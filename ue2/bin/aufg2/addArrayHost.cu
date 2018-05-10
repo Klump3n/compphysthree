@@ -204,7 +204,7 @@ int main(int argc, char **argv)
     int nElemIncr  = 5000000;
     int idx = 0;
     size_t nBytes= nElemMax * sizeof(float);
-    float *latenzHDArr, *latenzDHArr, *bandbreiteHDArr, *bandbreiteDHArr, *durchsatzHArr, durchsatzDArr;
+    float *latenzHDArr, *latenzDHArr, *bandbreiteHDArr, *bandbreiteDHArr, *durchsatzHArr, *durchsatzDArr;
 
     latenzHDArr = (float *)malloc(nBytes);
     latenzDHArr = (float *)malloc(nBytes);
@@ -215,7 +215,7 @@ int main(int argc, char **argv)
 
     for(nElem=nElemStart; nElem<nElemMax+1; nElem+=nElemIncr)
     {
-    oneRun(latenzHDArr, latenzDHArr, bandbreiteHDArr, bandbreiteDHArr, durchsatzHDArr, durchsatzDHArr, idx , nElem);
+    oneRun(latenzHDArr, latenzDHArr, bandbreiteHDArr, bandbreiteDHArr, durchsatzHArr, durchsatzDArr, idx , nElem);
     idx++;
     }
 
