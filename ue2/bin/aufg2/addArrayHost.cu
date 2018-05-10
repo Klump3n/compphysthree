@@ -163,11 +163,11 @@ void oneRun(float *latenzHDArr, float *latenzDHArr, float *bandbreiteHDArr,float
     // Addition auf dem Host
     addArrayHost(h_A, h_B, hostRef, nElem);
 
-    //Beende Zeitmessung Durchsatz Device
+    //Beende Zeitmessung Durchsatz Host
     double t_DurchH_end = seconds();
     double t_DurchH = t_DurchH_end - t_DurchH_start;
 
-    durchsatzHArr[idx] = 3*nElem*1.e-9 /t_DurchH; //Faktor wegen 3 flop
+    durchsatzHArr[idx] = nElem*1.e-9 /t_DurchH; 
     printf("Durchsatz Host: %f Gflops \n", durchsatzHArr[idx]);
     // verifiziren der Resultate
     checkResult(hostRef, gpuRef, nElem);

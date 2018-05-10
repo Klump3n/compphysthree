@@ -303,5 +303,18 @@ dass die implementierte Methode des selbe Ergebnis liefert, wie die Python
 Implementierung des letzten Übungsblattes.
 
 \section{Aufgabe 2}
+	
+	Die Datei addArrayHost.cu wurde so erweitert, dass für verschiedene Arraygrößen
+	die Latenz der Kopiervorgänge zwischen Host und Device, deren Bandbreite und 
+	der Durchsatz von Host und Device berechnet wurde. Die Arraygrößen für die 
+	diese Größen berechnet wurden, lagen zwischen $10^{7}$ und $6 \cdot 10^{7}$.
+	Führt man die Datei aus, die aus addArrayHost.cu kompiliert wird, erhält man
+	als Output die oben genannten Größen für alle Arraygrößen. Diesen Outputs kann
+	man entnehmen, dass für die getesteten Arrays unterschiedlicher Dimension
+	bereits recht konstante Werte für Durchsatz und Bandbreite erreicht werden.
+
+	\begin{verbatim}
+		test
+	\end{verbatim}
 
 \end{document}
