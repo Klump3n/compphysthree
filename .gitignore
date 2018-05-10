@@ -1,5 +1,6 @@
 __pycache__/
 *.el
+*.zip
 ue*/tex/*.aux
 ue*/tex/*.auxlock
 ue*/tex/*.log
