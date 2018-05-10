@@ -78,7 +78,7 @@ __global__ void addArrayGPU(float *A, float *B, float *C)
   C[idx] = A[idx] + B[idx]; //Insgesamt führt diese Funktion 3 flop aus
 }
 
-void oneRun(float *latenzHDArr, float *latenzDHArr, float *bandbreiteHDArr,float *bandbreiteDHArr, float *durchsatzArr,const int idx,const int nElem)
+void oneRun(float *latenzHDArr, float *latenzDHArr, float *bandbreiteHDArr,float *bandbreiteDHArr, float *durchsatzHArr, float *durchsatzDArr ,const int idx,const int nElem)
 {
     printf("Array-Groesse: %d\n", nElem);
     // Host-Speicher allozieren mit malloc
@@ -128,7 +128,7 @@ void oneRun(float *latenzHDArr, float *latenzDHArr, float *bandbreiteHDArr,float
     /* blockSize * threadSize HAS to be larger than nElem */
     /* int blockSize = 3; */
     int blockSize = (int) (nElem / 1024) + 1;
-    printf("Blocksize %d\n", blockSize);
+    //printf("Blocksize %d\n", blockSize);
     int threadSize = 1024;
     addArrayGPU<<<blockSize, threadSize>>>(d_A, d_B, d_C);
     cudaDeviceSynchronize();
@@ -137,8 +137,8 @@ void oneRun(float *latenzHDArr, float *latenzDHArr, float *bandbreiteHDArr,float
     double t_DurchD_end = seconds();
     double t_DurchD = t_DurchD_end - t_DurchD_start;
     
-    durchsatzArr[idx] = 3*nElem*1.e-9 /t_DurchD; //Faktor wegen 3 flop
-    printf("Durchsatz in %f Gflops \n", durchsatzArr[idx]);
+    durchsatzDArr[idx] = 3*nElem*1.e-9 /t_DurchD; //Faktor wegen 3 flop
+    printf("Durchsatz Device: %f Gflops \n", durchsatzDArr[idx]);
 
     // Starte Zeitmessung Latenz Device->Host
     double t_DHstart = seconds();
@@ -157,9 +157,18 @@ void oneRun(float *latenzHDArr, float *latenzDHArr, float *bandbreiteHDArr,float
     //printf(" Groesse float %lu \n", sizeof(float));
     printf("Bandbreite Device -> Host: %f GB/s\n", bandbreiteDHArr[idx]);
 
+    //Starte Zeitmessung Durchsatz Host
+    double t_DurchH_start = seconds();
+    
     // Addition auf dem Host
     addArrayHost(h_A, h_B, hostRef, nElem);
 
+    //Beende Zeitmessung Durchsatz Device
+    double t_DurchH_end = seconds();
+    double t_DurchH = t_DurchH_end - t_DurchH_start;
+
+    durchsatzHArr[idx] = 3*nElem*1.e-9 /t_DurchH; //Faktor wegen 3 flop
+    printf("Durchsatz Host: %f Gflops \n", durchsatzHArr[idx]);
     // verifiziren der Resultate
     checkResult(hostRef, gpuRef, nElem);
 
@@ -195,17 +204,18 @@ int main(int argc, char **argv)
     int nElemIncr  = 5000000;
     int idx = 0;
     size_t nBytes= nElemMax * sizeof(float);
-    float *latenzHDArr, *latenzDHArr, *bandbreiteHDArr, *bandbreiteDHArr, *durchsatzArr;
+    float *latenzHDArr, *latenzDHArr, *bandbreiteHDArr, *bandbreiteDHArr, *durchsatzHArr, durchsatzDArr;
 
     latenzHDArr = (float *)malloc(nBytes);
     latenzDHArr = (float *)malloc(nBytes);
     bandbreiteHDArr = (float *)malloc(nBytes);
     bandbreiteDHArr = (float *)malloc(nBytes);
-    durchsatzArr = (float *)malloc(nBytes);
+    durchsatzHArr = (float *)malloc(nBytes);
+    durchsatzDArr = (float *)malloc(nBytes);
 
     for(nElem=nElemStart; nElem<nElemMax+1; nElem+=nElemIncr)
     {
-    oneRun(latenzHDArr, latenzDHArr, bandbreiteHDArr, bandbreiteDHArr, durchsatzArr,idx , nElem);
+    oneRun(latenzHDArr, latenzDHArr, bandbreiteHDArr, bandbreiteDHArr, durchsatzHDArr, durchsatzDHArr, idx , nElem);
     idx++;
     }
 
