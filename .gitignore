@@ -1,7 +1,8 @@
 __pycache__/
 *.el
-tex/*.aux
-tex/*.log
-tex/*.out
-tex/*.synctex.gz
-tex/*.toc
+ue*/tex/*.aux
+ue*/tex/*.auxlock
+ue*/tex/*.log
+ue*/tex/*.out
+ue*/tex/*.synctex.gz
+ue*/tex/*.toc
