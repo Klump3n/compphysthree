@@ -240,6 +240,68 @@ Unbekannten-Vektor $v$ (ohne die Randbedingungen) an. Das Resultat ist in Abb.
 Vergleich der Abbildungen \ref{fig:w} und \ref{fig:verify} zeigt, dass die
 implementierte Methode das selbe Resultat liefert, wie die Methode der letzten
 Übung.
+
+\subsection{Implementierung von Hilfsfunktionen}
+
+Es wurden Hilfsfunktionen implementiert um ein Skalarprodukt zu berechnen
+(\texttt{double scalar\_product(double *u, double *v)}), um
+zwei Vektoren zu addieren (\texttt{void vector\_addition(double *u, double *v,
+  double *w)}) sowie um einen Vektor zu skalieren (\texttt{void
+  scale\_vector(double prefactor, double *v, double *w)}).
+
+\subsection{Implementierung der Methode der Konjugierten Gradienten}
+
+In \texttt{void conjugate\_gradient\_laplace(double *x, double *b)} ist die
+Methode der Konjugierten Gradienten implementiert. Mit ihr wird das $x$ zum
+Unbekannten-Vektor $v$ aus Abb. \ref{fig:v} bestimmt. Das Resultat konvergiert
+nach 27 Schritten (Konvergenz wird angenommen, wenn das Residuum $\|r\| <
+\num{1e-15}$ ist) und ist in Abb. \ref{fig:converged_x} zu finden.
+
+\begin{figure}[H]
+  \centering
+\begin{verbatim}
+tol (1.741376e-16 < 1.000000e-15) reached after 27 steps
+x = 
+  0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 
+  0.00 -15.24 -27.67 -31.78 -34.98 -36.26 -38.40 -29.25 -20.28 0.00 
+  0.00 -22.97 -43.87 -53.98 -60.39 -63.53 -62.61 -50.92 -28.28 0.00 
+  0.00 -28.66 -50.38 -61.26 -71.96 -70.69 -72.48 -60.84 -34.93 0.00 
+  0.00 -28.91 -48.31 -60.34 -70.69 -72.07 -72.60 -61.91 -36.50 0.00 
+  0.00 -26.86 -44.60 -56.51 -68.50 -69.20 -68.02 -57.63 -33.75 0.00 
+  0.00 -23.72 -41.72 -51.31 -59.28 -63.32 -63.84 -50.52 -31.89 0.00 
+  0.00 -22.60 -37.96 -47.23 -51.71 -52.15 -50.22 -39.32 -22.08 0.00 
+  0.00 -11.63 -22.50 -27.43 -28.37 -27.84 -27.56 -26.07 -15.41 0.00 
+  0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 
+||x|| = 381.97886569
+\end{verbatim}
+  \caption{$x$ zum Unbekannten-Vektor $v$ aus Abb. \ref{fig:v}, berechnet mit
+    der Methode der Konjugierten Gradienten.}
+  \label{fig:converged_x}
+\end{figure}
+
+Das Resultat wird mit der Python-Implementierung aus Übung 1 verifiziert (Abb.
+\ref{fig:python_x}).
+
+\begin{figure}[H]
+  \centering
+\begin{verbatim}
+[[-15.24 -27.67 -31.78 -34.98 -36.26 -38.4  -29.25 -20.28]
+ [-22.97 -43.87 -53.98 -60.39 -63.53 -62.61 -50.92 -28.28]
+ [-28.66 -50.38 -61.26 -71.96 -70.69 -72.48 -60.84 -34.93]
+ [-28.91 -48.31 -60.34 -70.69 -72.07 -72.6  -61.91 -36.5 ]
+ [-26.86 -44.6  -56.51 -68.5  -69.2  -68.02 -57.63 -33.75]
+ [-23.72 -41.72 -51.31 -59.28 -63.32 -63.84 -50.52 -31.89]
+ [-22.6  -37.96 -47.23 -51.71 -52.15 -50.22 -39.32 -22.08]
+ [-11.63 -22.5  -27.43 -28.37 -27.84 -27.56 -26.07 -15.41]]
+\end{verbatim}
+  \caption{$x$ berechnet mit der Python-Implementierung.}
+  \label{fig:python_x}
+\end{figure}
+
+Vergleich der Abbildungen \ref{fig:converged_x} und \ref{fig:python_x} zeigt,
+dass die implementierte Methode des selbe Ergebnis liefert, wie die Python
+Implementierung des letzten Übungsblattes.
+
 \section{Aufgabe 2}
 
 \end{document}
