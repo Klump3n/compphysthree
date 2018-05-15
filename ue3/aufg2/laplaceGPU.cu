@@ -21,8 +21,115 @@
     }                                                                          \
 }
 
-  
 
+
+/*
+   Das Flag-Array der aktiven/inneren Punkte wird gesetzt.
+*/
+void active_pts()
+{
+   int idx,i,j;
+
+   active=(int*)malloc(npts*sizeof(int));
+
+   idx=0; // fortlaufender Index
+   for (j=0; j<Ny+2; j++)
+   {
+      for (i=0; i<Nx+2; i++)
+      {
+         if ((i==0)||(j==0)||(i==Nx+1)||(j==Ny+1))
+            active[idx]=0; // Randpunkt
+         else
+            active[idx]=1; // innerer Punkt
+
+         idx+=1;
+      }
+   }
+}
+
+/*
+   Der Vektor p wird im Inneren auf zufaellige Werte gesetzt
+*/
+void random_vector(double *p)
+{
+   int idx;
+
+   for(idx = 0; idx < npts; idx++)
+   {
+      if (active[idx])
+         p[idx] = (double)(rand() & 0xFF ) / 10.0;
+   }
+}
+
+/*
+   Das Flag-Array der aktiven/inneren Punkte wird als
+   2D Gitter ausgegeben.
+*/
+void print_active()
+{
+   int i,j,idx;
+
+   printf("active points:\n");
+   idx=0;
+   for (j=0; j<Ny+2; j++)
+   {
+      printf("  ");
+      for (i=0; i<Nx+2; i++)
+      {
+         printf("%d ",active[idx]);
+         idx+=1;
+      }
+      printf("\n");
+   }
+}
+
+
+/*
+   Norm-Quadrat vom Vektor v.
+*/
+double norm_sqr(double *v)
+{
+   int idx;
+   double r=0.0;
+   for (idx=0; idx<npts; idx++)
+   {
+      r+=v[idx]*v[idx];
+   }
+   return r;
+}
+
+/*
+   Der Vektor p wird als 2D Gitter fuer i,j<=16 ausgegeben. Es werden innere/aktive
+   und, falls flag>0, auch die aeusseren Punkte ausgegeben.
+*/
+void print_vector(char *name, double *p, int flag)
+{
+   int i,j,idx;
+   double nrm;
+
+   printf("%s = \n",name);
+   idx=0;
+   for (j=0; j<Ny+2; j++)
+   {
+      if (j>16)
+      {
+         printf("  ...\n");
+         break;
+      }
+      printf("  ");
+      for (i=0; i<Nx+2; i++)
+      {
+         if ((i<16)&&((flag>0)||(active[idx])))
+            printf("%.2f ",p[idx]);
+         if (i==16)
+            printf("...");
+         idx+=1;
+      }
+      printf("\n");
+   }
+   nrm=norm_sqr(p);
+   printf("||%s|| = %.8f\n",name,sqrt(nrm));
+}
 
 
 __global__
@@ -35,7 +142,7 @@ void addArrayGPU_new(float *A, float *B, float *C) {
   C[idx] = A[idx] + B[idx];
 }
 
-__global__  
+__global__
 void laplace2d(float *w, float *v, const int N) {
     int i,j;
     int n = N+2;
@@ -43,74 +150,74 @@ void laplace2d(float *w, float *v, const int N) {
     i = threadIdx.x + blockIdx.x*blockDim.x;
     j = threadIdx.y + blockIdx.y*blockDim.y;
     printf("(i,j): (%d,%d) \n", i,j);
-    
-      /* skip the boundary */
-      if (
-          (i % n == 0) ||
-          ((int) (i / n) == 0) ||
-          (i % n == n-1) ||
-          ((int) (i / n) == n-1)
-          ) {
-      }
 
-      /* diagonal */
-      if (i == j) {
-        w[i] += -4 * v[j];
-      }
+    /* skip the boundary */
+    if (
+        (i % n == 0) ||
+        ((int) (i / n) == 0) ||
+        (i % n == n-1) ||
+        ((int) (i / n) == n-1)
+        ) {
+    }
 
-      /* first two off diagonals */
-      if (
-          ((i == j+1) && (i % n != 0))
-          ||
-          ((i == j-1) && (j % n != 0))
-          )
-        {
-          w[i] += 1 * v[j];
-        }
+    /* diagonal */
+    if (i == j) {
+      w[i] += -4 * v[j];
+    }
 
-      /* other two off diagonals */
-      if ((i == j+n) || (i == j-n)) {
+    /* first two off diagonals */
+    if (
+        ((i == j+1) && (i % n != 0))
+        ||
+        ((i == j-1) && (j % n != 0))
+        )
+      {
         w[i] += 1 * v[j];
       }
+
+    /* other two off diagonals */
+    if ((i == j+n) || (i == j-n)) {
+      w[i] += 1 * v[j];
     }
-  
-  
+}
+
+
 int main(int argc, char **argv)
 {
-   int N = 1;
-   int npts = (N+2)*(N+2);
-    
-   // Host-Speicher allozieren mit malloc
-   size_t nBytes = npts * sizeof(float);
-   float *h_v, *h_w;
-   h_v = (float *)malloc(nBytes);
-   h_w = (float *)malloc(nBytes);
-    
-   // Device-Speicher allozieren mit cudaMalloc
-   float *d_v, *d_w;
-   CHECK(cudaMalloc((float**)&d_v, nBytes));
-   CHECK(cudaMalloc((float**)&d_w, nBytes));
+  int N = 1;
+  int npts = (N+2)*(N+2);
 
-   // kopieren Host -> Device mit cudaMemcpy
-   CHECK(cudaMemcpy(d_v, h_v, nBytes, cudaMemcpyHostToDevice));
-   CHECK(cudaMemcpy(d_w, h_w, nBytes, cudaMemcpyHostToDevice));
-   
-   dim3 block(npts,npts);
-   dim3 grid(N,N);
-   laplace2d <<<block,grid>>> (d_w, d_v, N);
-   cudaDeviceSynchronize();
-   
-   // kopieren Device -> Host mit cudaMemcpy
-   //CHECK(cudaMemcpy(h_w, d_w, nBytes, cudaMemcpyDeviceToHost));  
-   
-   //print_vector("w",h_w,1);
-   
-   // Device-Speicher freigeben   
-   CHECK(cudaFree(d_v));
-   CHECK(cudaFree(d_w));
-   
-   // Host-Speicher freigeben
-   free(h_v);
-   free(h_w);
-    
+  // Host-Speicher allozieren mit malloc
+  size_t nBytes = npts * sizeof(float);
+  float *h_v, *h_w;
+  h_v = (float *)malloc(nBytes);
+  h_w = (float *)malloc(nBytes);
+
+  // Device-Speicher allozieren mit cudaMalloc
+  float *d_v, *d_w;
+  CHECK(cudaMalloc((float**)&d_v, nBytes));
+  CHECK(cudaMalloc((float**)&d_w, nBytes));
+
+  // kopieren Host -> Device mit cudaMemcpy
+  CHECK(cudaMemcpy(d_v, h_v, nBytes, cudaMemcpyHostToDevice));
+  CHECK(cudaMemcpy(d_w, h_w, nBytes, cudaMemcpyHostToDevice));
+
+  dim3 block(npts,npts);
+  dim3 grid(N,N);
+  laplace2d <<<block,grid>>> (d_w, d_v, N);
+  cudaDeviceSynchronize();
+
+  // kopieren Device -> Host mit cudaMemcpy
+  //CHECK(cudaMemcpy(h_w, d_w, nBytes, cudaMemcpyDeviceToHost));
+
+  //print_vector("w",h_w,1);
+
+  // Device-Speicher freigeben
+  CHECK(cudaFree(d_v));
+  CHECK(cudaFree(d_w));
+
+  // Host-Speicher freigeben
+  free(h_v);
+  free(h_w);
+
 }
