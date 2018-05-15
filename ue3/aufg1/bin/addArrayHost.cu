@@ -72,7 +72,7 @@ void addArrayHost(float *A, float *B, float *C, const int N)
 }
 
 __global__
-void addArrayGPU_new(float *A, float *B, float *C) {
+void addArrayGPU(float *A, float *B, float *C) {
 
   int blockOffset = (blockIdx.x + blockIdx.y * gridDim.x) * blockDim.x * blockDim.y;
   int threadId = threadIdx.x + threadIdx.y * blockDim.x;
@@ -86,14 +86,14 @@ void testGridParamter(const int nElem, FILE* results_file, int blockIdx, int blo
   // Host-Speicher allozieren mit malloc
   size_t nBytes = nElem * sizeof(float);
 
-  float latenzHDArr, latenzDHArr,
-    bandbreiteHDArr, bandbreiteDHArr,
-    durchsatzDArr/* , durchsatzHArr */;
+  /* float latenzHDArr, latenzDHArr, */
+  /*   bandbreiteHDArr, bandbreiteDHArr, */
+  /*   durchsatzDArr/\* , durchsatzHArr *\/; */
 
-  float *h_A, *h_B, *hostRef, *gpuRef;
+  float *h_A, *h_B, /* *hostRef, */ *gpuRef;
   h_A     = (float *)malloc(nBytes);
   h_B     = (float *)malloc(nBytes);
-  hostRef = (float *)malloc(nBytes);
+  /* hostRef = (float *)malloc(nBytes); */
   gpuRef  = (float *)malloc(nBytes);
 
   // initialisiere Arrays auf dem Host
@@ -109,29 +109,17 @@ void testGridParamter(const int nElem, FILE* results_file, int blockIdx, int blo
   CHECK(cudaMalloc((float**)&d_B, nBytes));
   CHECK(cudaMalloc((float**)&d_C, nBytes));
 
-  // Starte Zeitmessung Latenz Host->Device
-  double t_HDstart = seconds();
-
   // kopieren Host -> Device mit cudaMemcpy
   CHECK(cudaMemcpy(d_A, h_A, nBytes, cudaMemcpyHostToDevice));
   CHECK(cudaMemcpy(d_B, h_B, nBytes, cudaMemcpyHostToDevice));
   CHECK(cudaMemcpy(d_C, gpuRef, nBytes, cudaMemcpyHostToDevice));
-
-  // Beende Zeitmessung Latenz Host->Device
-  double t_HDend = seconds();
-
-  latenzHDArr= (t_HDend-t_HDstart)*1.e+3;
-
-  // Berechne Bandbreite aus Latenz und Groesse der Arrays
-  bandbreiteHDArr = 3*nElem*sizeof(float)/latenzHDArr*1.e-9*1.e+3; // GByte/s
-
 
   //Starte Zeitmessung Durchsatz Device
   double t_DurchD_start = seconds();
 
   dim3 block(blockIdx, blockIdy);
   dim3 grid(threadIdx, threadIdy);
-  addArrayGPU_new <<<block, grid>>> (d_A, d_B, d_C);
+  addArrayGPU <<<block, grid>>> (d_A, d_B, d_C);
 
   cudaDeviceSynchronize();
 
@@ -139,34 +127,8 @@ void testGridParamter(const int nElem, FILE* results_file, int blockIdx, int blo
   double t_DurchD_end = seconds();
   double t_DurchD = t_DurchD_end - t_DurchD_start;
 
-  durchsatzDArr = 3*nElem*1.e-9 /t_DurchD; //Faktor wegen 3 flop
-
-  // Starte Zeitmessung Latenz Device->Host
-  double t_DHstart = seconds();
-
   // kopieren Device -> Host mit cudaMemcpy
   CHECK(cudaMemcpy(gpuRef, d_C, nBytes, cudaMemcpyDeviceToHost));
-
-  // Beende Zeitmessung Latenz Device->Host
-  double t_DHend = seconds();
-
-  latenzDHArr = (t_DHend-t_DHstart)*1.e+3;
-
-  // Berechne Bandbreite aus Latenz und Groesse der Arrays
-  bandbreiteDHArr = 3*nElem*sizeof(float)/latenzDHArr*1.e-9*1.e+3; // GByte/s
-  //printf(" Groesse float %lu \n", sizeof(float));
-
-  /* //Starte Zeitmessung Durchsatz Host */
-  /* double t_DurchH_start = seconds(); */
-
-  /* // Addition auf dem Host */
-  /* addArrayHost(h_A, h_B, hostRef, nElem); */
-
-  /* //Beende Zeitmessung Durchsatz Host */
-  /* double t_DurchH_end = seconds(); */
-  /* double t_DurchH = t_DurchH_end - t_DurchH_start; */
-
-  /* durchsatzHArr = nElem*1.e-9 /t_DurchH; */
 
   /* // verifiziren der Resultate */
   /* checkResult(hostRef, gpuRef, nElem); */
@@ -179,7 +141,7 @@ void testGridParamter(const int nElem, FILE* results_file, int blockIdx, int blo
   // Host-Speicher freigeben
   free(h_A);
   free(h_B);
-  free(hostRef);
+  /* free(hostRef); */
   free(gpuRef);
 
   CHECK(cudaDeviceReset());
@@ -187,10 +149,8 @@ void testGridParamter(const int nElem, FILE* results_file, int blockIdx, int blo
   /* write results to file */
   fprintf(
           results_file,
-          "%f, %f, %f, %f, %f\n",
-          latenzHDArr, latenzDHArr,
-          bandbreiteHDArr, bandbreiteDHArr,
-          durchsatzDArr/* , durchsatzHArr */
+          "%f\n",
+          t_DurchD
           );
 }
 
@@ -231,10 +191,8 @@ int main(int argc, char **argv)
 
   fprintf(
           g,
-          "%s, %s, %s, %s, %s\n",
-          "latenzHDArr", "latenzDHArr",
-          "bandbreiteHDArr", "bandbreiteDHArr",
-          "durchsatzDArr"
+          "%s\n",
+          "Laufzeit"
           );
 
   int blockIdx;
