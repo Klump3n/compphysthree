@@ -65,7 +65,6 @@ void initialData(float *ip, int size)
     return;
 }
 
-
 void addArrayHost(float *A, float *B, float *C, const int N)
 {
     for (int idx = 0; idx < N; idx++)
@@ -82,23 +81,14 @@ void addArrayGPU_new(float *A, float *B, float *C) {
   C[idx] = A[idx] + B[idx];
 }
 
-__global__
-void addArrayGPU_old(float *A, float *B, float *C)
-{
-  int idx = blockDim.x * blockIdx.x + threadIdx.x;
-  C[idx] = A[idx] + B[idx]; //Insgesamt führt diese Funktion 3 flop aus
-}
+void testGridParamter(const int nElem, FILE* results_file, int blockIdx, int blockIdy, int threadIdx, int threadIdy) {
 
-void oneRun(float *latenzHDArr, float *latenzDHArr, float *bandbreiteHDArr,float *bandbreiteDHArr, float *durchsatzHArr, float *durchsatzDArr ,const int idx,const int nElem)
-{
-  int blockIdx = 4;
-  int blockIdy = 2;
-  int threadIdx = 8;
-  int threadIdy = 4;
-
-  printf("Array-Groesse: %d\n", nElem);
   // Host-Speicher allozieren mit malloc
   size_t nBytes = nElem * sizeof(float);
+
+  float latenzHDArr, latenzDHArr,
+    bandbreiteHDArr, bandbreiteDHArr,
+    durchsatzDArr/* , durchsatzHArr */;
 
   float *h_A, *h_B, *hostRef, *gpuRef;
   h_A     = (float *)malloc(nBytes);
@@ -110,7 +100,7 @@ void oneRun(float *latenzHDArr, float *latenzDHArr, float *bandbreiteHDArr,float
   initialData(h_A, nElem);
   initialData(h_B, nElem);
 
-  memset(hostRef, 0, nBytes);
+  /* memset(hostRef, 0, nBytes); */
   memset(gpuRef,  0, nBytes);
 
   // Device-Speicher allozieren mit cudaMalloc
@@ -130,26 +120,18 @@ void oneRun(float *latenzHDArr, float *latenzDHArr, float *bandbreiteHDArr,float
   // Beende Zeitmessung Latenz Host->Device
   double t_HDend = seconds();
 
-  latenzHDArr[idx]= (t_HDend-t_HDstart)*1.e+3;
-  printf("Latenz Host -> Device: %f ms\n", latenzHDArr[idx]);
+  latenzHDArr= (t_HDend-t_HDstart)*1.e+3;
 
   // Berechne Bandbreite aus Latenz und Groesse der Arrays
-  bandbreiteHDArr[idx] = 3*nElem*sizeof(float)/latenzHDArr[idx]*1.e-9*1.e+3; // GByte/s
-  //printf(" Groesse float %lu \n", sizeof(float));
-  printf("Bandbreite Host -> Device: %f GB/s\n", bandbreiteHDArr[idx]);
+  bandbreiteHDArr = 3*nElem*sizeof(float)/latenzHDArr*1.e-9*1.e+3; // GByte/s
+
 
   //Starte Zeitmessung Durchsatz Device
   double t_DurchD_start = seconds();
 
-  dim3 block(blockIdx, blockIdy); // 4x2 Threads pro Block
-  dim3 grid(threadIdx, threadIdy); // 8x4 Block-Grid
+  dim3 block(blockIdx, blockIdy);
+  dim3 grid(threadIdx, threadIdy);
   addArrayGPU_new <<<block, grid>>> (d_A, d_B, d_C);
-
-  /* /\* old kind on the block *\/ */
-  /* int blockSize = (int) (nElem / 1024) + 1; */
-  /* //printf("Blocksize %d\n", blockSize); */
-  /* int threadSize = 1024; */
-  /* addArrayGPU_old<<<blockSize, threadSize>>>(d_A, d_B, d_C); */
 
   cudaDeviceSynchronize();
 
@@ -157,8 +139,7 @@ void oneRun(float *latenzHDArr, float *latenzDHArr, float *bandbreiteHDArr,float
   double t_DurchD_end = seconds();
   double t_DurchD = t_DurchD_end - t_DurchD_start;
 
-  durchsatzDArr[idx] = 3*nElem*1.e-9 /t_DurchD; //Faktor wegen 3 flop
-  printf("Durchsatz Device: %f Gflops \n", durchsatzDArr[idx]);
+  durchsatzDArr = 3*nElem*1.e-9 /t_DurchD; //Faktor wegen 3 flop
 
   // Starte Zeitmessung Latenz Device->Host
   double t_DHstart = seconds();
@@ -169,28 +150,26 @@ void oneRun(float *latenzHDArr, float *latenzDHArr, float *bandbreiteHDArr,float
   // Beende Zeitmessung Latenz Device->Host
   double t_DHend = seconds();
 
-  latenzDHArr[idx] = (t_DHend-t_DHstart)*1.e+3;
-  printf("Latenz Device -> Host: %f ms\n", latenzDHArr[idx]);
+  latenzDHArr = (t_DHend-t_DHstart)*1.e+3;
 
   // Berechne Bandbreite aus Latenz und Groesse der Arrays
-  bandbreiteDHArr[idx] = 3*nElem*sizeof(float)/latenzDHArr[idx]*1.e-9*1.e+3; // GByte/s
+  bandbreiteDHArr = 3*nElem*sizeof(float)/latenzDHArr*1.e-9*1.e+3; // GByte/s
   //printf(" Groesse float %lu \n", sizeof(float));
-  printf("Bandbreite Device -> Host: %f GB/s\n", bandbreiteDHArr[idx]);
 
-  //Starte Zeitmessung Durchsatz Host
-  double t_DurchH_start = seconds();
+  /* //Starte Zeitmessung Durchsatz Host */
+  /* double t_DurchH_start = seconds(); */
 
-  // Addition auf dem Host
-  addArrayHost(h_A, h_B, hostRef, nElem);
+  /* // Addition auf dem Host */
+  /* addArrayHost(h_A, h_B, hostRef, nElem); */
 
-  //Beende Zeitmessung Durchsatz Host
-  double t_DurchH_end = seconds();
-  double t_DurchH = t_DurchH_end - t_DurchH_start;
+  /* //Beende Zeitmessung Durchsatz Host */
+  /* double t_DurchH_end = seconds(); */
+  /* double t_DurchH = t_DurchH_end - t_DurchH_start; */
 
-  durchsatzHArr[idx] = nElem*1.e-9 /t_DurchH;
-  printf("Durchsatz Host: %f Gflops \n", durchsatzHArr[idx]);
-  // verifiziren der Resultate
-  checkResult(hostRef, gpuRef, nElem);
+  /* durchsatzHArr = nElem*1.e-9 /t_DurchH; */
+
+  /* // verifiziren der Resultate */
+  /* checkResult(hostRef, gpuRef, nElem); */
 
   // Device-Speicher freigeben
   CHECK(cudaFree(d_A));
@@ -204,55 +183,79 @@ void oneRun(float *latenzHDArr, float *latenzDHArr, float *bandbreiteHDArr,float
   free(gpuRef);
 
   CHECK(cudaDeviceReset());
+
+  /* write results to file */
+  fprintf(
+          results_file,
+          "%f, %f, %f, %f, %f\n",
+          latenzHDArr, latenzDHArr,
+          bandbreiteHDArr, bandbreiteDHArr,
+          durchsatzDArr/* , durchsatzHArr */
+          );
 }
 
 int main(int argc, char **argv)
 {
   printf("%s Starting...\n", argv[0]);
 
+  typedef struct grid_parameters {
+    int gridX;
+    int gridY;
+    int threadX;
+    int threadY;
+  } grid_params_t;
+
+  int data_points = 820;
+  /* allocate 820 points for the grid data */
+  grid_params_t grid_data[data_points];
+
+  /* read in grid parameters */
+  FILE *f = fopen("grid_parameters", "r");
+  int i;
+  for (i = 0;
+       i != data_points &&
+         fscanf(f, "%d, %d, %d, %d\n", &grid_data[i].gridX, &grid_data[i].gridY, &grid_data[i].threadX, &grid_data[i].threadY) != EOF;
+       i++
+       );
+  fclose(f);
+
   // Device auswaehlen
   int dev = 0;
   CHECK(cudaSetDevice(dev));
 
-  // Groesse der arrays festlegen
-  int nElem = 1024;
-  if (argc>1)
-    nElem = atoi(argv[1]);
+  /* // Groesse der arrays festlegen */
+  int nElem = 1024*1024;
 
-  int nElemStart = 10000000;
-  int nElemMax   = 60000000;
-  int nElemIncr  = 5000000;
-  int idx = 0;
-  size_t nBytes= nElemMax * sizeof(float);
-  float *latenzHDArr, *latenzDHArr, *bandbreiteHDArr, *bandbreiteDHArr, *durchsatzHArr, *durchsatzDArr;
+  /* overwrite results */
+  FILE *g = fopen("grid_parameter_results", "w");
 
-  latenzHDArr = (float *)malloc(nBytes);
-  latenzDHArr = (float *)malloc(nBytes);
-  bandbreiteHDArr = (float *)malloc(nBytes);
-  bandbreiteDHArr = (float *)malloc(nBytes);
-  durchsatzHArr = (float *)malloc(nBytes);
-  durchsatzDArr = (float *)malloc(nBytes);
+  fprintf(
+          g,
+          "%s, %s, %s, %s, %s\n",
+          "latenzHDArr", "latenzDHArr",
+          "bandbreiteHDArr", "bandbreiteDHArr",
+          "durchsatzDArr"
+          );
 
-  /* for(nElem=nElemStart; nElem<nElemMax+1; nElem+=nElemIncr) */
-  /*   { */
-  /*     oneRun(latenzHDArr, latenzDHArr, bandbreiteHDArr, bandbreiteDHArr, durchsatzHArr, durchsatzDArr, idx , nElem); */
-  /*     idx++; */
-  /*   } */
+  int blockIdx;
+  int blockIdy;
+  int threadIdx;
+  int threadIdy;
 
-  int blockIdx = 4;
-  int blockIdy = 2;
-  int threadIdx = 8;
-  int threadIdy = 4;
+  for (i = 0; i < data_points+1; i++) {
+    blockIdx = grid_data[i].gridX;
+    blockIdy = grid_data[i].gridY;
+    threadIdx = grid_data[i].threadX;
+    threadIdy = grid_data[i].threadY;
 
-  /* overwrite nElem */
-  int arraySize = blockIdx * blockIdy * threadIdx * threadIdy;
-  printf("%d\n", arraySize);
+    testGridParamter(nElem, g, blockIdx, blockIdy, threadIdx, threadIdy);
+    printf("%d/%d\r", i, data_points);
+    fflush(stdout);
+  }
+  printf("\n");
 
-  for(nElem=arraySize; nElem<arraySize+1; nElem++)
-    {
-      oneRun(latenzHDArr, latenzDHArr, bandbreiteHDArr, bandbreiteDHArr, durchsatzHArr, durchsatzDArr, idx , nElem);
-      idx++;
-    }
+  /* close results */
+  fclose(g);
 
   return(0);
 }

@@ -17,18 +17,17 @@ if __name__ == '__main__':
     gridSize = []
     threadSize = []
 
+    # brute force loop
     for i in range(20):
         for j in range(20):
             for k in range(20):
                 for l in range(20):
                     if (
-                            (i + j + k + l == 20) and
-                            (k <= 10) and
-                            (l <= 10) and
-                            (i != j) and
-                            (k != l) and
-                            (i+j not in gridSize) and
-                            (k+l not in threadSize)
+                            (i + j + k + l == 20)
+                            and (k+l <= 10)
+                            and (i != j)
+                            and (k != l)
+                            # and (i+j == 10)
                     ):
                         gridSize.append(i+j)
                         threadSize.append(k+l)
@@ -37,7 +36,14 @@ if __name__ == '__main__':
                         threadX.append(k)
                         threadY.append(l)
 
-    print(gridX)
-    print(gridY)
-    print(threadX)
-    print(threadY)
+    # print(gridX)
+    # print(gridY)
+    # print(threadX)
+    # print(threadY)
+
+    # for it, _ in enumerate(gridX):
+    #     print("gridX: {}, gridY: {}, threadX: {}, threadY: {}".format(2**gridX[it], 2**gridY[it], 2**threadX[it], 2**threadY[it]))
+    print("gridsize: {}".format(len(gridX)))
+    with open('grid_parameters', 'w') as f:
+        for it, _ in enumerate(gridX):
+            f.write('{}, {}, {}, {}\n'.format(2**gridX[it], 2**gridY[it], 2**threadX[it], 2**threadY[it]))
