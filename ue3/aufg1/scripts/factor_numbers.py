@@ -46,4 +46,4 @@ if __name__ == '__main__':
     print("gridsize: {}".format(len(gridX)))
     with open('grid_parameters', 'w') as f:
         for it, _ in enumerate(gridX):
-            f.write('{}, {}, {}, {}\n'.format(2**gridX[it], 2**gridY[it], 2**threadX[it], 2**threadY[it]))
+            f.write('{}, {}, {}, {},\n'.format(2**gridX[it], 2**gridY[it], 2**threadX[it], 2**threadY[it]))
