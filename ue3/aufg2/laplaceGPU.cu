@@ -21,44 +21,9 @@
     }                                                                          \
 }
 
-   int N = 1;
+  
 
-void print_vector(char *name, double *p, int flag)
-{
-   int i,j,idx;
-   double nrm;
 
-   printf("%s = \n",name);
-   idx=0;
-   for (j=0; j<N+2; j++)
-   {
-      if (j>16)
-      {
-         printf("  ...\n");
-         break;
-      }
-      printf("  ");
-      for (i=0; i<N+2; i++)
-      {
-         if ((i<16)&&((flag>0)||(active[idx])))
-           printf("%.2f ",p[idx]);
-         if (i==16)
-           printf("...");
-         idx+=1;
-      }
-      printf("\n");
-   }
-   nrm=norm_sqr(p);
-   printf("||%s|| = %.8f\n",name,sqrt(nrm));
-}
-
-double seconds()
-{
-    struct timeval tp;
-    struct timezone tzp;
-    int i = gettimeofday(&tp, &tzp);
-    return ((double)tp.tv_sec + (double)tp.tv_usec * 1.e-6);
-}
 
 __global__
 void addArrayGPU_new(float *A, float *B, float *C) {
@@ -112,23 +77,23 @@ void laplace2d(float *w, float *v, const int N) {
   
 int main(int argc, char **argv)
 {
-
+   int N = 1;
    int npts = (N+2)*(N+2);
     
    // Host-Speicher allozieren mit malloc
    size_t nBytes = npts * sizeof(float);
    float *h_v, *h_w;
    h_v = (float *)malloc(nBytes);
-   //h_w = (float *)malloc(nBytes);
+   h_w = (float *)malloc(nBytes);
     
    // Device-Speicher allozieren mit cudaMalloc
-   float *d_v, *d_w
+   float *d_v, *d_w;
    CHECK(cudaMalloc((float**)&d_v, nBytes));
    CHECK(cudaMalloc((float**)&d_w, nBytes));
 
    // kopieren Host -> Device mit cudaMemcpy
-   //CHECK(cudaMemcpy(d_v, h_v, nBytes, cudaMemcpyHostToDevice));
-   //CHECK(cudaMemcpy(d_w, h_w, nBytes, cudaMemcpyHostToDevice));
+   CHECK(cudaMemcpy(d_v, h_v, nBytes, cudaMemcpyHostToDevice));
+   CHECK(cudaMemcpy(d_w, h_w, nBytes, cudaMemcpyHostToDevice));
    
    dim3 block(npts,npts);
    dim3 grid(N,N);
@@ -141,11 +106,11 @@ int main(int argc, char **argv)
    //print_vector("w",h_w,1);
    
    // Device-Speicher freigeben   
-   //CHECK(cudaFree(d_v));
-   //CHECK(cudaFree(d_w));
+   CHECK(cudaFree(d_v));
+   CHECK(cudaFree(d_w));
    
    // Host-Speicher freigeben
-   //free(h_v);
-   //free(h_w);
+   free(h_v);
+   free(h_w);
     
 }
