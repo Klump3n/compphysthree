@@ -72,12 +72,18 @@ void addArrayHost(float *A, float *B, float *C, const int N)
         C[idx] = A[idx] + B[idx];
 }
 
-__global__ void addArrayGPU_new(float *A, float *B, float *C) {
-  int i;
+__global__
+void addArrayGPU_new(float *A, float *B, float *C) {
+
+  int blockOffset = (blockIdx.x + blockIdx.y * gridDim.x) * blockDim.x * blockDim.y;
+  int threadId = threadIdx.x + threadIdx.y * blockDim.x;
+  int idx = blockOffset + threadId;
+
+  C[idx] = A[idx] + B[idx];
 }
 
-
-__global__ void addArrayGPU_old(float *A, float *B, float *C)
+__global__
+void addArrayGPU_old(float *A, float *B, float *C)
 {
   int idx = blockDim.x * blockIdx.x + threadIdx.x;
   C[idx] = A[idx] + B[idx]; //Insgesamt führt diese Funktion 3 flop aus
@@ -85,9 +91,10 @@ __global__ void addArrayGPU_old(float *A, float *B, float *C)
 
 void oneRun(float *latenzHDArr, float *latenzDHArr, float *bandbreiteHDArr,float *bandbreiteDHArr, float *durchsatzHArr, float *durchsatzDArr ,const int idx,const int nElem)
 {
-  dim3 block(4, 2); // 4x2 Threads pro Block
-  dim3 grid(8, 4); // 8x4 Block-Grid
-  /* addArrayGPU<<<grid,block>>>(...); */
+  int blockIdx = 4;
+  int blockIdy = 2;
+  int threadIdx = 8;
+  int threadIdy = 4;
 
   printf("Array-Groesse: %d\n", nElem);
   // Host-Speicher allozieren mit malloc
@@ -134,11 +141,16 @@ void oneRun(float *latenzHDArr, float *latenzDHArr, float *bandbreiteHDArr,float
   //Starte Zeitmessung Durchsatz Device
   double t_DurchD_start = seconds();
 
-  /* old kind on the block */
-  int blockSize = (int) (nElem / 1024) + 1;
-  //printf("Blocksize %d\n", blockSize);
-  int threadSize = 1024;
-  addArrayGPU_old<<<blockSize, threadSize>>>(d_A, d_B, d_C);
+  dim3 block(blockIdx, blockIdy); // 4x2 Threads pro Block
+  dim3 grid(threadIdx, threadIdy); // 8x4 Block-Grid
+  addArrayGPU_new <<<block, grid>>> (d_A, d_B, d_C);
+
+  /* /\* old kind on the block *\/ */
+  /* int blockSize = (int) (nElem / 1024) + 1; */
+  /* //printf("Blocksize %d\n", blockSize); */
+  /* int threadSize = 1024; */
+  /* addArrayGPU_old<<<blockSize, threadSize>>>(d_A, d_B, d_C); */
+
   cudaDeviceSynchronize();
 
   //Beende Zeitmessung Durchsatz Device
@@ -234,9 +246,9 @@ int main(int argc, char **argv)
 
   /* overwrite nElem */
   int arraySize = blockIdx * blockIdy * threadIdx * threadIdy;
-  printf("%d", arraySize);
+  printf("%d\n", arraySize);
 
-  for(nElem=arraySize; nElem<arraySize; nElem++)
+  for(nElem=arraySize; nElem<arraySize+1; nElem++)
     {
       oneRun(latenzHDArr, latenzDHArr, bandbreiteHDArr, bandbreiteDHArr, durchsatzHArr, durchsatzDArr, idx , nElem);
       idx++;
