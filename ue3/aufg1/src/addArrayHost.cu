@@ -86,21 +86,15 @@ void testGridParamter(const int nElem, FILE* results_file, int blockIdx, int blo
   // Host-Speicher allozieren mit malloc
   size_t nBytes = nElem * sizeof(float);
 
-  /* float latenzHDArr, latenzDHArr, */
-  /*   bandbreiteHDArr, bandbreiteDHArr, */
-  /*   durchsatzDArr/\* , durchsatzHArr *\/; */
-
   float *h_A, *h_B, /* *hostRef, */ *gpuRef;
   h_A     = (float *)malloc(nBytes);
   h_B     = (float *)malloc(nBytes);
-  /* hostRef = (float *)malloc(nBytes); */
   gpuRef  = (float *)malloc(nBytes);
 
   // initialisiere Arrays auf dem Host
   initialData(h_A, nElem);
   initialData(h_B, nElem);
 
-  /* memset(hostRef, 0, nBytes); */
   memset(gpuRef,  0, nBytes);
 
   // Device-Speicher allozieren mit cudaMalloc
@@ -149,7 +143,7 @@ void testGridParamter(const int nElem, FILE* results_file, int blockIdx, int blo
   /* write results to file */
   fprintf(
           results_file,
-          "%f\n",
+          "%lf,\n",
           t_DurchD
           );
 }
@@ -170,11 +164,11 @@ int main(int argc, char **argv)
   grid_params_t grid_data[data_points];
 
   /* read in grid parameters */
-  FILE *f = fopen("grid_parameters", "r");
+  FILE *f = fopen("../scripts/grid_parameters", "r");
   int i;
   for (i = 0;
        i != data_points &&
-         fscanf(f, "%d, %d, %d, %d\n", &grid_data[i].gridX, &grid_data[i].gridY, &grid_data[i].threadX, &grid_data[i].threadY) != EOF;
+         fscanf(f, "%d, %d, %d, %d,\n", &grid_data[i].gridX, &grid_data[i].gridY, &grid_data[i].threadX, &grid_data[i].threadY) != EOF;
        i++
        );
   fclose(f);
@@ -187,27 +181,21 @@ int main(int argc, char **argv)
   int nElem = 1024*1024;
 
   /* overwrite results */
-  FILE *g = fopen("grid_parameter_results", "w");
-
-  fprintf(
-          g,
-          "%s\n",
-          "Laufzeit"
-          );
+  FILE *g = fopen("../scripts/grid_parameter_results", "w");
 
   int blockIdx;
   int blockIdy;
   int threadIdx;
   int threadIdy;
 
-  for (i = 0; i < data_points+1; i++) {
+  for (i = 0; i < data_points; i++) {
     blockIdx = grid_data[i].gridX;
     blockIdy = grid_data[i].gridY;
     threadIdx = grid_data[i].threadX;
     threadIdy = grid_data[i].threadY;
 
     testGridParamter(nElem, g, blockIdx, blockIdy, threadIdx, threadIdy);
-    printf("%d/%d\r", i, data_points);
+    printf("%d/%d\r", i, data_points-1);
     fflush(stdout);
   }
   printf("\n");
