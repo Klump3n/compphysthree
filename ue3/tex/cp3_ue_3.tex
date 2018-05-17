@@ -153,7 +153,51 @@
 Auf der GPU wird die Addition von Arrays der Dimension $N=1024^2$ für verschiedene execution configurations, daher die Einteilung der Threads in zweidimensionale Blöcke und Grids untersucht. Der untersuchte Parameter ist die Laufzeit der Vektoraddition. 
 Die Dimension $N$ wird als Produkt von vier Faktoren dargestellt, wobei die Faktoren die 
 Aufteilung in Block- und Gridgröße bestimmen. 
+Tendenziell scheinen Verteilungen mit großen Griddimensionen und kleinen Blockdimensionen die kürzesten Laufzeiten zu haben.
+Aus den 820 möglichen Kombinationen werden die 40 schnellsten execution configurations aufgelistet:
 
+\begin{verbatim}
+0.00016 seconds for 	 gridX: 2 	 gridY: 262144 	 threadX: 2 	 threadY: 1
+0.00016 seconds for 	 gridX: 131072 	 gridY: 1 	 threadX: 2 	 threadY: 4
+0.00016 seconds for 	 gridX: 1 	 gridY: 262144 	 threadX: 1 	 threadY: 4
+0.00016 seconds for 	 gridX: 2 	 gridY: 65536 	 threadX: 8 	 threadY: 1
+0.00016 seconds for 	 gridX: 262144 	 gridY: 1 	 threadX: 4 	 threadY: 1
+0.000161 seconds for 	 gridX: 65536 	 gridY: 2 	 threadX: 8 	 threadY: 1
+0.000161 seconds for 	 gridX: 65536 	 gridY: 4 	 threadX: 1 	 threadY: 4
+0.000161 seconds for 	 gridX: 65536 	 gridY: 4 	 threadX: 4 	 threadY: 1
+0.000161 seconds for 	 gridX: 131072 	 gridY: 4 	 threadX: 2 	 threadY: 1
+0.000161 seconds for 	 gridX: 1 	 gridY: 524288 	 threadX: 2 	 threadY: 1
+0.000161 seconds for 	 gridX: 1 	 gridY: 131072 	 threadX: 8 	 threadY: 1
+0.000161 seconds for 	 gridX: 131072 	 gridY: 4 	 threadX: 1 	 threadY: 2
+0.000161 seconds for 	 gridX: 524288 	 gridY: 1 	 threadX: 2 	 threadY: 1
+0.000161 seconds for 	 gridX: 65536 	 gridY: 2 	 threadX: 4 	 threadY: 2
+0.000161 seconds for 	 gridX: 1 	 gridY: 131072 	 threadX: 2 	 threadY: 4
+0.000161 seconds for 	 gridX: 1 	 gridY: 131072 	 threadX: 1 	 threadY: 8
+0.000161 seconds for 	 gridX: 131072 	 gridY: 2 	 threadX: 4 	 threadY: 1
+0.000161 seconds for 	 gridX: 131072 	 gridY: 1 	 threadX: 8 	 threadY: 1
+0.000161 seconds for 	 gridX: 65536 	 gridY: 8 	 threadX: 2 	 threadY: 1
+0.000161 seconds for 	 gridX: 65536 	 gridY: 8 	 threadX: 1 	 threadY: 2
+0.000161 seconds for 	 gridX: 1 	 gridY: 65536 	 threadX: 1 	 threadY: 16
+0.000161 seconds for 	 gridX: 1 	 gridY: 65536 	 threadX: 2 	 threadY: 8
+0.000161 seconds for 	 gridX: 1 	 gridY: 131072 	 threadX: 4 	 threadY: 2
+0.000161 seconds for 	 gridX: 1 	 gridY: 65536 	 threadX: 8 	 threadY: 2
+0.000161 seconds for 	 gridX: 262144 	 gridY: 1 	 threadX: 1 	 threadY: 4
+0.000161 seconds for 	 gridX: 65536 	 gridY: 2 	 threadX: 1 	 threadY: 8
+0.000161 seconds for 	 gridX: 524288 	 gridY: 1 	 threadX: 1 	 threadY: 2
+0.000161 seconds for 	 gridX: 8 	 gridY: 65536 	 threadX: 2 	 threadY: 1
+0.000161 seconds for 	 gridX: 8 	 gridY: 65536 	 threadX: 1 	 threadY: 2
+0.000161 seconds for 	 gridX: 4 	 gridY: 131072 	 threadX: 2 	 threadY: 1
+0.000161 seconds for 	 gridX: 4 	 gridY: 131072 	 threadX: 1 	 threadY: 2
+0.000161 seconds for 	 gridX: 4 	 gridY: 65536 	 threadX: 4 	 threadY: 1
+0.000161 seconds for 	 gridX: 262144 	 gridY: 2 	 threadX: 1 	 threadY: 2
+0.000161 seconds for 	 gridX: 2 	 gridY: 262144 	 threadX: 1 	 threadY: 2
+0.000161 seconds for 	 gridX: 2 	 gridY: 131072 	 threadX: 4 	 threadY: 1
+0.000161 seconds for 	 gridX: 4 	 gridY: 65536 	 threadX: 1 	 threadY: 4
+0.000161 seconds for 	 gridX: 2 	 gridY: 65536 	 threadX: 4 	 threadY: 2
+0.000161 seconds for 	 gridX: 2 	 gridY: 65536 	 threadX: 2 	 threadY: 4
+0.000161 seconds for 	 gridX: 65536 	 gridY: 1 	 threadX: 2 	 threadY: 8
+0.000161 seconds for 	 gridX: 65536 	 gridY: 1 	 threadX: 16 	 threadY: 1
+\end{verbatim}
 
 \section{Aufgabe 2}
 
