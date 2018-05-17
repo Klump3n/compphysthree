@@ -37,7 +37,7 @@ def block_thread(factor_list):
 
     """
     factor_list = np.asarray(factor_list)
-    factor_list = np.sort(factor_list)[::-1]
+    factor_list = np.sort(factor_list)
 
     blockX = 1
     blockY = 1
@@ -45,26 +45,26 @@ def block_thread(factor_list):
     threadY = 1
 
     if len(factor_list) % 4 == 0:
-        blockX = factor_list[0]
-        blockY = factor_list[1]
         threadX = factor_list[2]
         threadY = factor_list[3]
+        blockX = factor_list[0]
+        blockY = factor_list[1]
         return blockX, blockY, threadX, threadY
 
     if len(factor_list) == 2:
-        blockX = factor_list[0]
-        blockY = factor_list[1]
+        threadX = factor_list[0]
+        threadY = factor_list[1]
         return blockX, blockY, threadX, threadY
 
     if len(factor_list) == 3:
-        blockX = factor_list[0]
-        blockY = factor_list[1]
-        threadY = factor_list[2]
+        threadX = factor_list[0]
+        threadY = factor_list[1]
+        blockY = factor_list[2]
         return blockX, blockY, threadX, threadY
 
     # if all else fails multiply the last two elements of the list
     new_list = []
-    factor_list = factor_list[::-1]
+
     for it, number in enumerate(factor_list):
         if it == 0:
             continue
@@ -81,10 +81,9 @@ def block_thread(factor_list):
 if __name__ == '__main__':
 
     with open('factorizations', 'w') as fact_file:
-        for n in range(1, 100+1):
+        for n in range(1, 64+1):
             N = n + 2
             Nsq = (N)*(N)
             factor_list = factorization(Nsq)
             blockX, blockY, threadX, threadY = block_thread(factor_list)
             fact_file.write('{}, {}, {}, {}, {},\n'.format(n, blockX, blockY, threadX, threadY))
-
