@@ -7,3 +7,4 @@ ue*/tex/*.log
 ue*/tex/*.out
 ue*/tex/*.synctex.gz
 ue*/tex/*.toc
+ue*/*/bin/*
