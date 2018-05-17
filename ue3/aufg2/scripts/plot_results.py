@@ -57,6 +57,7 @@ if __name__ == '__main__':
             val = laplace_speedup[it]
 
             if (max(val, val_left) / min(val, val_left)) > 1.5:
+                print('configuration = [N, gridDim.x, gridDim.y, blockDim.x, blockDim.y]')
                 print('configuration {} has speedup {}'.format(factorizations[it-1], laplace_speedup[it-1]))
                 print('configuration {} has speedup {}'.format(factorizations[it], laplace_speedup[it]))
-                print()
+                print('ratio is {}\n'.format((max(val, val_left) / min(val, val_left))))
