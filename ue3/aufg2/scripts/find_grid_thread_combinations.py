@@ -81,7 +81,7 @@ def block_thread(factor_list):
 if __name__ == '__main__':
 
     with open('factorizations', 'w') as fact_file:
-        for n in range(1, 64+1):
+        for n in range(1, 100+1):
             N = n + 2
             Nsq = (N)*(N)
             factor_list = factorization(Nsq)
