@@ -225,7 +225,57 @@ void laplace2d_CPU(float *w, float *v) {
   }
 }
 
-void oneLoop(FILE* results_file, const int N, int gridX, int gridY, int threadX, int threadY) {
+/*
+ * vector_addition(float *v, float *u, float *w)
+ *
+ * Adds two vectors u and v together and writes the result into w.
+ *
+ */
+void vector_addition_CPU(float *u, float *v, float *w) {
+  int i;
+
+  for (i=0; i<npts; i++) {
+    w[i] += u[i] + v[i];
+  }
+}
+
+__global__
+void vector_addition_GPU(float *u, float *v, float *w) {
+
+  /* calculate the id */
+  int blockOffset = (blockIdx.x + blockIdx.y * gridDim.x) * blockDim.x * blockDim.y;
+  int threadId = threadIdx.x + threadIdx.y * blockDim.x;
+  int idx = blockOffset + threadId;
+
+  w[idx] = u[idx] + v[idx];
+}
+
+/*
+ * scale_vector(float prefactor, float *v, float *w)
+ *
+ * Scales a vector v by a prefactor and writes the result into w.
+ *
+ */
+void scale_vector_CPU(float prefactor, float *v, float *w) {
+  int i;
+
+  for (i=0; i<npts; i++) {
+    w[i] = prefactor * v[i];
+  }
+}
+
+__global__
+void scale_vector_GPU(float prefactor, float *v, float *w) {
+
+  /* calculate the id */
+  int blockOffset = (blockIdx.x + blockIdx.y * gridDim.x) * blockDim.x * blockDim.y;
+  int threadId = threadIdx.x + threadIdx.y * blockDim.x;
+  int idx = blockOffset + threadId;
+
+  w[idx] = prefactor * v[idx];
+}
+
+void laplaceOneLoop(FILE* laplace_speedup_file, const int N, int gridX, int gridY, int threadX, int threadY) {
 
   int nBytes;
   float *h_w, *h_v, *h_u;
@@ -293,7 +343,165 @@ void oneLoop(FILE* results_file, const int N, int gridX, int gridY, int threadX,
   /* print_vector("w_CPU",h_w,1); */
 
   fprintf(
-          results_file,
+          laplace_speedup_file,
+          "%lf, %lf, %lf,\n",
+          t_GPU, t_CPU, t_CPU/t_GPU
+          );
+
+  free(active);
+  free(h_w);
+  free(h_v);
+
+}
+
+void vectorScaleOneLoop(FILE* vector_scale_speedup_file, const int N, int gridX, int gridY, int threadX, int threadY) {
+
+  int nBytes;
+  float *h_w, *h_v, *h_u;
+
+  // Globale Variablen setzen:
+  // Anzahl der Inneren Punkte in x- und y-Richtung
+  Nx = N;
+  Ny = N;
+
+  // Gesamtanzahl der Gitterpunkte
+  npts=(Nx+2)*(Ny+2);
+  // Aktive Punkte - Array
+  active_pts();
+
+  // Speicherbedarf pro Vektor in Byte
+  nBytes=npts*sizeof(float);
+
+  // Speicher für Vektoren allozieren
+  h_w = (float *) malloc(npts * sizeof(float));
+  h_v = (float *) malloc(npts * sizeof(float));
+  h_u = (float *) malloc(npts * sizeof(float));
+
+  // auf Null setzen
+  memset(h_w, 0, nBytes);
+  memset(h_v, 0, nBytes);
+  memset(h_u, 0, nBytes);
+
+  // Zufaelliger Vektor
+  random_vector(h_v);
+
+  /* print_vector("v",h_v,1); */
+
+  // Device-Speicher allozieren mit cudaMalloc
+  float *d_v, *d_w;
+  CHECK(cudaMalloc((float**)&d_v, nBytes));
+  CHECK(cudaMalloc((float**)&d_w, nBytes));
+
+  // kopieren Host -> Device mit cudaMemcpy
+  CHECK(cudaMemcpy(d_v, h_v, nBytes, cudaMemcpyHostToDevice));
+  CHECK(cudaMemcpy(d_w, h_w, nBytes, cudaMemcpyHostToDevice));
+
+  dim3 block(gridX, gridY);
+  dim3 grid(threadX, threadY);
+
+  double t_GPU_start = seconds();
+  laplace2d_GPU <<<block,grid>>> (d_w, d_v, N+2);
+  cudaDeviceSynchronize();
+  double t_GPU_end = seconds();
+  double t_GPU = t_GPU_end - t_GPU_start;
+
+  /* kopieren Device -> Host mit cudaMemcpy */
+  CHECK(cudaMemcpy(h_w, d_w, nBytes, cudaMemcpyDeviceToHost));
+
+  /* print_vector("w_GPU",h_w,1); */
+
+  // Device-Speicher freigeben
+  CHECK(cudaFree(d_v));
+  CHECK(cudaFree(d_w));
+
+  double t_CPU_start = seconds();
+  laplace2d_CPU(h_u, h_v);
+  double t_CPU_end = seconds();
+  double t_CPU = t_CPU_end - t_CPU_start;
+
+  /* print_vector("w_CPU",h_w,1); */
+
+  fprintf(
+          vector_scale_speedup_file,
+          "%lf, %lf, %lf,\n",
+          t_GPU, t_CPU, t_CPU/t_GPU
+          );
+
+  free(active);
+  free(h_w);
+  free(h_v);
+
+}
+
+void vectorAddOneLoop(FILE* vector_add_speedup_file, const int N, int gridX, int gridY, int threadX, int threadY) {
+
+  int nBytes;
+  float *h_w, *h_v, *h_u;
+
+  // Globale Variablen setzen:
+  // Anzahl der Inneren Punkte in x- und y-Richtung
+  Nx = N;
+  Ny = N;
+
+  // Gesamtanzahl der Gitterpunkte
+  npts=(Nx+2)*(Ny+2);
+  // Aktive Punkte - Array
+  active_pts();
+
+  // Speicherbedarf pro Vektor in Byte
+  nBytes=npts*sizeof(float);
+
+  // Speicher für Vektoren allozieren
+  h_w = (float *) malloc(npts * sizeof(float));
+  h_v = (float *) malloc(npts * sizeof(float));
+  h_u = (float *) malloc(npts * sizeof(float));
+
+  // auf Null setzen
+  memset(h_w, 0, nBytes);
+  memset(h_v, 0, nBytes);
+  memset(h_u, 0, nBytes);
+
+  // Zufaelliger Vektor
+  random_vector(h_v);
+
+  /* print_vector("v",h_v,1); */
+
+  // Device-Speicher allozieren mit cudaMalloc
+  float *d_v, *d_w;
+  CHECK(cudaMalloc((float**)&d_v, nBytes));
+  CHECK(cudaMalloc((float**)&d_w, nBytes));
+
+  // kopieren Host -> Device mit cudaMemcpy
+  CHECK(cudaMemcpy(d_v, h_v, nBytes, cudaMemcpyHostToDevice));
+  CHECK(cudaMemcpy(d_w, h_w, nBytes, cudaMemcpyHostToDevice));
+
+  dim3 block(gridX, gridY);
+  dim3 grid(threadX, threadY);
+
+  double t_GPU_start = seconds();
+  laplace2d_GPU <<<block,grid>>> (d_w, d_v, N+2);
+  cudaDeviceSynchronize();
+  double t_GPU_end = seconds();
+  double t_GPU = t_GPU_end - t_GPU_start;
+
+  /* kopieren Device -> Host mit cudaMemcpy */
+  CHECK(cudaMemcpy(h_w, d_w, nBytes, cudaMemcpyDeviceToHost));
+
+  /* print_vector("w_GPU",h_w,1); */
+
+  // Device-Speicher freigeben
+  CHECK(cudaFree(d_v));
+  CHECK(cudaFree(d_w));
+
+  double t_CPU_start = seconds();
+  laplace2d_CPU(h_u, h_v);
+  double t_CPU_end = seconds();
+  double t_CPU = t_CPU_end - t_CPU_start;
+
+  /* print_vector("w_CPU",h_w,1); */
+
+  fprintf(
+          vector_add_speedup_file,
           "%lf, %lf, %lf,\n",
           t_GPU, t_CPU, t_CPU/t_GPU
           );
@@ -331,7 +539,22 @@ int main(int argc, char **argv)
   fclose(f);
 
   /* overwrite results */
-  FILE *g = fopen("../scripts/grid_parameter_results", "w");
+  FILE *laplace_speedup = fopen("../scripts/laplace_speedup_results", "w");
+  FILE *vector_scale_speedup = fopen("../scripts/vector_scale_speedup_results", "w");
+  FILE *vector_add_speedup = fopen("../scripts/vector_add_speedup_results", "w");
+
+  fprintf(
+          laplace_speedup,
+          "t_GPU, t_CPU, t_CPU/t_GPU,\n"
+          );
+  fprintf(
+          vector_scale_speedup,
+          "t_GPU, t_CPU, t_CPU/t_GPU,\n"
+          );
+  fprintf(
+          vector_add_speedup,
+          "t_GPU, t_CPU, t_CPU/t_GPU,\n"
+          );
 
   int gridX, gridY, threadX, threadY;
 
@@ -343,14 +566,35 @@ int main(int argc, char **argv)
     threadX = grid_data[i].threadX;
     threadY = grid_data[i].threadY;
 
-    oneLoop(g, N, gridX, gridY, threadX, threadY);
+    laplaceOneLoop(
+                   laplace_speedup,
+                   N,
+                   gridX, gridY,
+                   threadX, threadY
+                   );
+
+    vectorScaleOneLoop(
+                       vector_scale_speedup,
+                       N,
+                       gridX, gridY,
+                       threadX, threadY
+                       );
+
+    vectorAddOneLoop(
+                     vector_add_speedup,
+                     N,
+                     gridX, gridY,
+                     threadX, threadY
+                     );
 
     printf("%d/%d\r", i+1, data_points);
     fflush(stdout);
   }
   printf("\n");
 
-  fclose(g);
+  fclose(laplace_speedup);
+  fclose(vector_scale_speedup);
+  fclose(vector_add_speedup);
 
   return (0);
 
