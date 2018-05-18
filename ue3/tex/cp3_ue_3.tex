@@ -200,6 +200,8 @@ Aus den 820 möglichen Kombinationen werden die 40 schnellsten execution configu
 \end{verbatim}
 
 Mit einer Laufzeit von $160\thinspace\mu$s ist die Konfiguration mit \num{2} $\cdot$ \num{262144} Blöcken und \num{2} $\cdot$ \num{1} Threads am schnellsten. Die langsameren Konfigurationen waren alle bei unter $700\thinspace\mu$s.
+Die schnellsten \num{40} execution configurations haben gerade die Eigenschaft, dass eine Blockdimension groß gegenüber der anderen ist,
+und die Blockdimension viel größer als die Threaddimensionen sind.
 \section{Aufgabe 2}
 
 Der Speedup ist ein Maß dafür, wie sehr ein numerisches Problem von Parallelisierung profitiert.
@@ -230,4 +232,5 @@ Beispielsweise ist bei einer Gittergröße von \num{60} $\cdot$ \num{60}, einer 
 \num{31} $\cdot$ \num{31}  der Speedup bei ungefähr \num{20000}, während bei einer Blockverteillung von \num{5}$\cdot$\num{5} und einer Threadverteilung
 \num{13} $\cdot$ \num{13}, für ein \num{63} $\cdot$ \num{63} Gitter, der Speedup nur bei etwa \num{7000} liegt.\\
 In Aufgabe 1 jedoch waren gerade Kkonfigurationen mit vielen Blöcken und dafür wenigen Threads pro Block am schnellsten.
+Im Gegensatz zu Aufgabe 1 waren die meisten Faktorisierungen jedoch recht symmetrisch, daher es war keine Block- oder Threaddimension deutlich größer als die jeweils andere.
 \end{document}
