@@ -132,7 +132,7 @@
 %============================================================
 % Titel, Autor, Datum
 %============================================================
-\title{Übung 1 \\Computational Physics III}
+\title{Übung 3 \\Computational Physics III}
 \author{Matthias Plock (552335) \and Paul Ledwon (561764)} %\\Otto Normalverbraucher (271828)}
 \date{\today}
 
@@ -150,9 +150,9 @@
 
 \section{Aufgabe 1}
 
-Auf der GPU wird die Addition von Arrays der Dimension $N=1024^2$ für verschiedene execution configurations, daher die Einteilung der Threads in zweidimensionale Blöcke und Grids untersucht. Der untersuchte Parameter ist die Laufzeit der Vektoraddition. 
-Die Dimension $N$ wird als Produkt von vier Faktoren dargestellt, wobei die Faktoren die 
-Aufteilung in Block- und Gridgröße bestimmen. 
+Auf der GPU wird die Addition von Arrays der Dimension $N=1024^2$ für verschiedene execution configurations, daher die Einteilung der Threads in zweidimensionale Blöcke und Grids untersucht. Der untersuchte Parameter ist die Laufzeit der Vektoraddition.
+Die Dimension $N$ wird als Produkt von vier Faktoren dargestellt, wobei die Faktoren die
+Aufteilung in Block- und Gridgröße bestimmen.
 Tendenziell scheinen Verteilungen mit großen Griddimensionen und kleinen Blockdimensionen die kürzesten Laufzeiten zu haben.
 Aus den 820 möglichen Kombinationen werden die 40 schnellsten execution configurations aufgelistet:
 
@@ -199,6 +199,7 @@ Aus den 820 möglichen Kombinationen werden die 40 schnellsten execution configu
 0.000161 seconds for 	 gridX: 65536 	 gridY: 1 	 threadX: 16 	 threadY: 1
 \end{verbatim}
 
+Mit einer Laufzeit von $160\thinspace\mu$s ist die Konfiguration mit \num{2} $\cdot$ \num{262144} Blöcken und \num{2} $\cdot$ \num{1} Threads am schnellsten. Die langsameren Konfigurationen waren alle bei unter $700\thinspace\mu$s.
 \section{Aufgabe 2}
 
 Der Speedup ist ein Maß dafür, wie sehr ein numerisches Problem von Parallelisierung profitiert.
@@ -209,19 +210,24 @@ Für den Fall, dass man GPU und CPU vergleicht, ist der Speedup wie folgt defini
 
 wobei $T$ jeweils die Laufzeit des Problems auf der GPU bzw CPU bezeichnet.\\
 
-Um die Skalierung des Laplaceproduktes auf der GPU zu untersuchen, wird der Speedup gegenüber 
-des Laplaceproduktes auf der CPU für verschiedene Gitterdimensionen und 
+Um die Skalierung des Laplaceproduktes auf der GPU zu untersuchen, wird der Speedup gegenüber
+des Laplaceproduktes auf der CPU für verschiedene Gitterdimensionen und
 Block-Thread-Dimensionierung bestimmt. Analog passiert dies für die Vektoraddition und Vektorskalierung, dies ist in Abb. \ref{fig:speedup} dargestellt.
 
 \begin{figure}[H]
   \centering
   \includegraphics[width=.85\textwidth]{../aufg2/figures/speedup.pdf}
   \caption{
-    Speedup der verschiedenen Funktionen in einem Semilogplot. 
+    Speedup der verschiedenen Funktionen in einem Semilogplot.
   }
   \label{fig:speedup}
 \end{figure}
 
 Während für kleine Gitter die Funktionen auf der CPU noch schneller ausgeführt werden, ist mit steigender Gitterdimension ein Speedup in der Größenordnung von $10^4$ erreichbar.
-
+Während in Aufgabe 1 die execution configurations mit großen Blöcken und kleinen Threadanzahlen die schnellsten Laufzeiten erreichen, sieht man an
+Abb. \ref{fig:speedup}, dass der Speedup für große Gitterdimensionen um eine Größenordnung fluktuiert.
+Beispielsweise ist bei einer Gittergröße von \num{60} $\cdot$ \num{60}, einer Blockverteilung von \num{2}$\cdot$\num{2} und einer Threadverteilung
+\num{31} $\cdot$ \num{31}  der Speedup bei ungefähr \num{20000}, während bei einer Blockverteillung von \num{5}$\cdot$\num{5} und einer Threadverteilung
+\num{13} $\cdot$ \num{13}, für ein \num{63} $\cdot$ \num{63} Gitter, der Speedup nur bei etwa \num{7000} liegt.\\
+In Aufgabe 1 jedoch waren gerade Kkonfigurationen mit vielen Blöcken und dafür wenigen Threads pro Block am schnellsten.
 \end{document}
