@@ -1,0 +1,72 @@
+==31862== NVPROF is profiling process 31862, command: ../bin/reduction 32
+Invocations                               Metric Name                        Metric Description         Min         Max         Avg
+Device "Quadro K4000 (0)"
+    Kernel: reduceInterleaved(int*, int*, unsigned int)
+          1                            gld_efficiency             Global Memory Load Efficiency      60.58%      60.58%      60.58%
+          1                            gld_throughput                    Global Load Throughput  9.4593GB/s  9.4593GB/s  9.4585GB/s
+          1                        achieved_occupancy                        Achieved Occupancy    0.239320    0.239320    0.239320
+    Kernel: reduceUnrolling(int*, int*, unsigned int)
+          1                            gld_efficiency             Global Memory Load Efficiency      75.60%      75.60%      75.60%
+          1                            gld_throughput                    Global Load Throughput  13.410GB/s  13.410GB/s  13.410GB/s
+          1                        achieved_occupancy                        Achieved Occupancy    0.240597    0.240597    0.240597
+
+==31875== NVPROF is profiling process 31875, command: ../bin/reduction 64
+Invocations                               Metric Name                        Metric Description         Min         Max         Avg
+Device "Quadro K4000 (0)"
+    Kernel: reduceInterleaved(int*, int*, unsigned int)
+          1                            gld_efficiency             Global Memory Load Efficiency      75.60%      75.60%      75.60%
+          1                            gld_throughput                    Global Load Throughput  12.901GB/s  12.901GB/s  12.901GB/s
+          1                        achieved_occupancy                        Achieved Occupancy    0.463253    0.463253    0.463253
+    Kernel: reduceUnrolling(int*, int*, unsigned int)
+          1                            gld_efficiency             Global Memory Load Efficiency      86.15%      86.15%      86.15%
+          1                            gld_throughput                    Global Load Throughput  20.103GB/s  20.103GB/s  20.103GB/s
+          1                        achieved_occupancy                        Achieved Occupancy    0.467415    0.467415    0.467415
+
+==31888== NVPROF is profiling process 31888, command: ../bin/reduction 128
+Invocations                               Metric Name                        Metric Description         Min         Max         Avg
+Device "Quadro K4000 (0)"
+    Kernel: reduceInterleaved(int*, int*, unsigned int)
+          1                            gld_efficiency             Global Memory Load Efficiency      86.15%      86.15%      86.15%
+          1                            gld_throughput                    Global Load Throughput  19.066GB/s  19.066GB/s  19.066GB/s
+          1                        achieved_occupancy                        Achieved Occupancy    0.921929    0.921929    0.921929
+    Kernel: reduceUnrolling(int*, int*, unsigned int)
+          1                            gld_efficiency             Global Memory Load Efficiency      92.57%      92.57%      92.57%
+          1                            gld_throughput                    Global Load Throughput  30.814GB/s  30.814GB/s  30.814GB/s
+          1                        achieved_occupancy                        Achieved Occupancy    0.931237    0.931237    0.931237
+
+==31901== NVPROF is profiling process 31901, command: ../bin/reduction 256
+Invocations                               Metric Name                        Metric Description         Min         Max         Avg
+Device "Quadro K4000 (0)"
+    Kernel: reduceInterleaved(int*, int*, unsigned int)
+          1                            gld_efficiency             Global Memory Load Efficiency      92.57%      92.57%      92.57%
+          1                            gld_throughput                    Global Load Throughput  15.571GB/s  15.571GB/s  15.571GB/s
+          1                        achieved_occupancy                        Achieved Occupancy    0.924312    0.924312    0.924312
+    Kernel: reduceUnrolling(int*, int*, unsigned int)
+          1                            gld_efficiency             Global Memory Load Efficiency      96.15%      96.15%      96.15%
+          1                            gld_throughput                    Global Load Throughput  26.290GB/s  26.290GB/s  26.289GB/s
+          1                        achieved_occupancy                        Achieved Occupancy    0.932488    0.932488    0.932488
+
+==31914== NVPROF is profiling process 31914, command: ../bin/reduction 512
+Invocations                               Metric Name                        Metric Description         Min         Max         Avg
+Device "Quadro K4000 (0)"
+    Kernel: reduceInterleaved(int*, int*, unsigned int)
+          1                            gld_efficiency             Global Memory Load Efficiency      96.15%      96.15%      96.15%
+          1                            gld_throughput                    Global Load Throughput  12.447GB/s  12.447GB/s  12.446GB/s
+          1                        achieved_occupancy                        Achieved Occupancy    0.932784    0.932784    0.932784
+    Kernel: reduceUnrolling(int*, int*, unsigned int)
+          1                            gld_efficiency             Global Memory Load Efficiency      98.04%      98.04%      98.04%
+          1                            gld_throughput                    Global Load Throughput  21.865GB/s  21.865GB/s  21.865GB/s
+          1                        achieved_occupancy                        Achieved Occupancy    0.938988    0.938988    0.938988
+
+==31927== NVPROF is profiling process 31927, command: ../bin/reduction 1024
+Invocations                               Metric Name                        Metric Description         Min         Max         Avg
+Device "Quadro K4000 (0)"
+    Kernel: reduceInterleaved(int*, int*, unsigned int)
+          1                            gld_efficiency             Global Memory Load Efficiency      98.04%      98.04%      98.04%
+          1                            gld_throughput                    Global Load Throughput  8.9473GB/s  8.9473GB/s  8.9472GB/s
+          1                        achieved_occupancy                        Achieved Occupancy    0.948850    0.948850    0.948850
+    Kernel: reduceUnrolling(int*, int*, unsigned int)
+          1                            gld_efficiency             Global Memory Load Efficiency      99.01%      99.01%      99.01%
+          1                            gld_throughput                    Global Load Throughput  16.365GB/s  16.365GB/s  16.364GB/s
+          1                        achieved_occupancy                        Achieved Occupancy    0.951497    0.951497    0.951497
+
