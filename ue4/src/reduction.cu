@@ -80,6 +80,38 @@ __global__ void reduceUnrolling (int *g_idata, int *g_odata, unsigned int n)
     if (tid == 0) g_odata[blockIdx.x] = g_idata[idx];
 }
 
+__global__ void qReduceUnrolling (int *g_idata, int *g_odata, unsigned int n, unsigned int q)
+{
+    // set thread ID
+    unsigned int tid = threadIdx.x;
+    unsigned int idx = blockIdx.x * blockDim.x * 2 + threadIdx.x;
+
+    // unroll q
+    if (idx + (q-1)*(threadIdx.x+1) < n)
+    {
+	for (int k = 1; k < (q-1); k++)
+	{
+            g_idata[idx] += g_idata[idx + (q-1)*threadIdx.x + k];
+	}
+    }
+    __syncthreads();
+
+    // in-place reduction in global memory
+    for (int stride = blockDim.x / q; stride > 0; stride /= q)
+    {
+        if (tid < stride)
+        {
+            g_idata[idx] += g_idata[idx + stride];
+        }
+
+        // synchronize within threadblock
+        __syncthreads();
+    }
+
+    // write result for this block to global mem
+    if (tid == 0) g_odata[blockIdx.x] = g_idata[idx];
+}
+
 int main(int argc, char **argv)
 {
     // set up device
