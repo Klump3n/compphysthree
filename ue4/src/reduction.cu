@@ -80,21 +80,25 @@ __global__ void reduceUnrolling (int *g_idata, int *g_odata, unsigned int n)
     if (tid == 0) g_odata[blockIdx.x] = g_idata[idx];
 }
 
+/* work in progress
 __global__ void qReduceUnrolling (int *g_idata, int *g_odata, unsigned int n, unsigned int q)
 {
     // set thread ID
     unsigned int tid = threadIdx.x;
-    unsigned int idx = blockIdx.x * blockDim.x * 2 + threadIdx.x;
+    unsigned int idx = blockIdx.x * blockDim.x * q + threadIdx.x;
 
     // unroll q
-    if (idx + (q-1)*(threadIdx.x+1) < n)
+    if (idx + (q-1)*threadIdx.x + q < n)
     {
-	for (int k = 1; k < (q-1); k++)
+	for (int k = 2; k < (q+1); k++)
 	{
             g_idata[idx] += g_idata[idx + (q-1)*threadIdx.x + k];
 	}
     }
     __syncthreads();
+
+    if(threadIdx.x == 0) printf("%d",g_idata[0]);
+    cudaDeviceReset();
 
     // in-place reduction in global memory
     for (int stride = blockDim.x / q; stride > 0; stride /= q)
@@ -111,7 +115,7 @@ __global__ void qReduceUnrolling (int *g_idata, int *g_odata, unsigned int n, un
     // write result for this block to global mem
     if (tid == 0) g_odata[blockIdx.x] = g_idata[idx];
 }
-
+*/
 int main(int argc, char **argv)
 {
     // set up device
@@ -151,7 +155,7 @@ int main(int argc, char **argv)
     for (int i = 0; i < size; i++)
     {
         // mask off high 2 bytes to force max number to 255
-        h_idata[i] = sign*((int)( rand() & 0xFF ));
+        h_idata[i] =1;// sign*((int)( rand() & 0xFF ));
         sign*=-1;
     }
 
@@ -210,6 +214,29 @@ int main(int argc, char **argv)
               "%d>>>\n", iElaps, gpu_sum, grid2.x, block.x);
     }
 
+/*
+    // kernel: q reduceUnrolling
+    if (grid.x>1)
+    {
+       int q = 4; // choose q
+       dim3 gridq ((grid.x + 1)/q,1);
+       CHECK(cudaMemcpy(d_idata, h_idata, bytes, cudaMemcpyHostToDevice));
+       CHECK(cudaDeviceSynchronize());
+       iStart = seconds();
+       qReduceUnrolling<<<gridq.x, block>>>(d_idata, d_odata, size, q);
+       CHECK(cudaDeviceSynchronize());
+       iElaps = seconds() - iStart;
+       CHECK(cudaGetLastError());
+       CHECK(cudaMemcpy(h_odata, d_odata, gridq.x * sizeof(int),
+                        cudaMemcpyDeviceToHost));
+       gpu_sum = 0;
+
+       for (int i = 0; i < gridq.x; i++) gpu_sum += h_odata[i];
+
+       printf("gpu q Unrolling  elapsed %f sec gpu_sum: %d <<<grid %d block "
+              "%d>>>\n", iElaps, gpu_sum, gridq.x, block.x);
+    }
+*/
     // free host memory
     free(h_idata);
     free(h_odata);
