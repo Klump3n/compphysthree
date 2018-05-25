@@ -80,7 +80,6 @@ __global__ void reduceUnrolling (int *g_idata, int *g_odata, unsigned int n)
     if (tid == 0) g_odata[blockIdx.x] = g_idata[idx];
 }
 
-/* work in progress
 __global__ void qReduceUnrolling (int *g_idata, int *g_odata, unsigned int n, unsigned int q)
 {
     // set thread ID
@@ -88,20 +87,17 @@ __global__ void qReduceUnrolling (int *g_idata, int *g_odata, unsigned int n, un
     unsigned int idx = blockIdx.x * blockDim.x * q + threadIdx.x;
 
     // unroll q
-    if (idx + (q-1)*threadIdx.x + q < n)
+    if (idx + (q-1)*blockDim.x < n)
     {
-	for (int k = 2; k < (q+1); k++)
+	for (int k = 1; k < q; k++)
 	{
-            g_idata[idx] += g_idata[idx + (q-1)*threadIdx.x + k];
+            g_idata[idx] += g_idata[idx + k*blockDim.x ];
 	}
     }
     __syncthreads();
 
-    if(threadIdx.x == 0) printf("%d",g_idata[0]);
-    cudaDeviceReset();
-
     // in-place reduction in global memory
-    for (int stride = blockDim.x / q; stride > 0; stride /= q)
+    for (int stride = blockDim.x / 2; stride > 0; stride /= 2)
     {
         if (tid < stride)
         {
@@ -115,7 +111,7 @@ __global__ void qReduceUnrolling (int *g_idata, int *g_odata, unsigned int n, un
     // write result for this block to global mem
     if (tid == 0) g_odata[blockIdx.x] = g_idata[idx];
 }
-*/
+
 int main(int argc, char **argv)
 {
     // set up device
@@ -214,11 +210,10 @@ int main(int argc, char **argv)
               "%d>>>\n", iElaps, gpu_sum, grid2.x, block.x);
     }
 
-/*
     // kernel: q reduceUnrolling
     if (grid.x>1)
     {
-       int q = 4; // choose q
+       int q = 16; // choose q
        dim3 gridq ((grid.x + 1)/q,1);
        CHECK(cudaMemcpy(d_idata, h_idata, bytes, cudaMemcpyHostToDevice));
        CHECK(cudaDeviceSynchronize());
@@ -236,7 +231,7 @@ int main(int argc, char **argv)
        printf("gpu q Unrolling  elapsed %f sec gpu_sum: %d <<<grid %d block "
               "%d>>>\n", iElaps, gpu_sum, gridq.x, block.x);
     }
-*/
+
     // free host memory
     free(h_idata);
     free(h_odata);
