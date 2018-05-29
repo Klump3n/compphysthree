@@ -24,14 +24,14 @@ inline double seconds()
     return ((double)tp.tv_sec + (double)tp.tv_usec * 1.e-6);
 }
 
-__global__ void print_vector(int *vector,const int size)
-{
-    for (int i=0; i<size; i++)
-    {
-        printf("%d",vector[i]);
-    }
+/* __global__ void print_vector(int *vector,const int size) */
+/* { */
+/*     for (int i=0; i<size; i++) */
+/*     { */
+/*         printf("%d",vector[i]); */
+/*     } */
     
-    printf("\n");
-}
+/*     printf("\n"); */
+/* } */
 
 #endif // _COMMON_H
