@@ -160,6 +160,8 @@
   \label{fig:skizzierung_reduktion}
 \end{figure}
 
+
+
 \subsection{(Aufgabenteil ii, iii, iv) \newline
   Messung der Laufzeiten, Global Memory Load Efficiency, Global Load
   Throughput und Achieved Occupancy}
@@ -197,7 +199,14 @@
   \label{fig:blocksizes}
 \end{figure}
 
-Erklaerung blabla.
+In Abb. 2a) sind die Laufzeiten fuer den interleavedReduce-Algorithmus und den UnrollReduce-Algorithmus in Abhaengigkeit
+dargestellt. Den größsten Einfluß auf die Laufzeit scheint die "Global Load Throughput", also die Bandbreite, zu haben. 
+Da die auf den Threads ausgeführten Berechnungen numerisch nicht sehr aufwändig sind, wird ein Großteil der Zeit benoetigt,
+um die Daten zwischen Host und Device zu kopieren. 
+Fuer die Blocksize von 128, bei der die Laufzeit minimal ist, ist auch die Bandbreite am größsten.
+Eine höhere Auslastung und Memory Load Efficiency hat auch einen positiven auf die Laufzeit, bei größeren Blocksizes 
+sind sowohl Auslastung und Memory Load Efficiency höher. 
+
 
 
 \subsection{(Aufgabenteil v, vi) \newline Optimaler Wert fuer die Anzahl der Elemente q, die vor Reduktion
