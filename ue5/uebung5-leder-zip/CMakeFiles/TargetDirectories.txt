@@ -1,0 +1,3 @@
+/users/stud/ledwon/compphysthree/ue5/uebung5-v1.0-714fe71f356d7f254fb5e2c2f55498d6364ad40b/CMakeFiles/rebuild_cache.dir
+/users/stud/ledwon/compphysthree/ue5/uebung5-v1.0-714fe71f356d7f254fb5e2c2f55498d6364ad40b/CMakeFiles/edit_cache.dir
+/users/stud/ledwon/compphysthree/ue5/uebung5-v1.0-714fe71f356d7f254fb5e2c2f55498d6364ad40b/CMakeFiles/run-cg.dir

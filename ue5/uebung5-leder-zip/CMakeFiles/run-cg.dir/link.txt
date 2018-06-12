@@ -1,0 +1,1 @@
+/usr/bin/clang++-3.8      CMakeFiles/run-cg.dir/run-cg_generated_run-cg.cu.o CMakeFiles/run-cg.dir/run-cg_generated_geometry.cu.o CMakeFiles/run-cg.dir/run-cg_generated_linalg.cu.o CMakeFiles/run-cg.dir/run-cg_generated_cg.cu.o  -o run-cg -rdynamic -Wl,-Bstatic -lcudart_static -Wl,-Bdynamic -lpthread -ldl -lrt 
