@@ -136,22 +136,29 @@ int main(int argc, char **argv)
       assert(abs((gpu_sum-cpu_sum)/cpu_sum)<sqrt(npts)*DBL_EPSILON);
    }
 
-   // Einheitsvektor
-   memset(v, 0, nBytes);
-   v[coord2index(Nx/2,Nx/2)]=1.0; // v=0, ausser am Gitterpunkt (Nx/2+1,Ny/2+1)
-   print_vector("v",v,1);
+   /* // Einheitsvektor */
+   /* memset(v, 0, nBytes); */
+   /* v[coord2index(Nx/2,Nx/2)]=1.0; // v=0, ausser am Gitterpunkt (Nx/2+1,Ny/2+1) */
+   /* print_vector("v",v,1); */
 
-   /* iStart = seconds(); */
-   /* cg(w,v,1000,1e-10,&status); */
-   /* iElaps = seconds() - iStart; */
-   /* printf("cpu cg      elapsed %f\n", iElaps); */
-
+   int maxiter = 3;
 
    iStart = seconds();
-   cg_gpu(w,v,1000,1e-10,&status);
+   cg(w,v,maxiter,1e-10,&status);
+   iElaps = seconds() - iStart;
+   printf("cpu cg      elapsed %f\n", iElaps);
+
+   /* memset(w, 0, nBytes); */
+   /* // Einheitsvektor */
+   /* memset(v, 0, nBytes); */
+   /* v[coord2index(Nx/2,Nx/2)]=1.0; // v=0, ausser am Gitterpunkt (Nx/2+1,Ny/2+1) */
+   /* print_vector("v",v,1); */
+   
+
+   iStart = seconds();
+   cg_gpu(w,v,maxiter,1e-10,&status);
    iElaps = seconds() - iStart;
    printf("gpu cg      elapsed %f\n", iElaps);
-
 
    print_vector("x",w,0);
 

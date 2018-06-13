@@ -111,50 +111,88 @@ double norm_sqr(double *v)
    }
    return r;
 }
-
 /* this is super slow */
-void norm_sqr_gpu(double *res, double *d_r, double *d_intmed1, double *d_intmed2, int Nx, int Ny) {
+void norm_sqr_gpu(double *res, double *d_r, double *d_intmed1, double *d_intmed2, int nx, int ny) {
 
   /* set intmeds to 0 */
   CHECK(cudaMemset(d_intmed1, 0, npts*sizeof(double)));
   CHECK(cudaMemset(d_intmed2, 0, npts*sizeof(double)));
 
   /* square all entries of the vector */
-  vector_square_entries_gpu<<<grid, block>>>(d_r, Nx, Ny);
+  vector_square_entries_gpu<<<grid, block>>>(d_r, nx, ny);
+  CHECK(cudaDeviceSynchronize());
+  /* funktioniert */
 
   /* add as much as possible */
   reduceUnrolling<<<grid2, block2>>>(d_r, d_intmed1, npts);
+  CHECK(cudaDeviceSynchronize());
+
+  /* double *what1; */
+  /* double crap1 = 0.0; */
+  /* what1=(double*)malloc(nblk*sizeof(double)); */
+  /* memset(what1,0,nblk*sizeof(double)); */
+  /* CHECK(cudaMemcpy(what1, d_intmed1, nblk*sizeof(double),cudaMemcpyDeviceToHost)); */
+  /* crap1 = vector_add(what1, nblk); */
+  /* printf("unrolling stage 1 %f\n", crap1); */
+
   /* add the rest too */
   reduceUnrolling<<<grid3, block3>>>(d_intmed1, d_intmed2, nblk);
+  CHECK(cudaDeviceSynchronize());
 
-  /* get from gpu */
-  CHECK(cudaMemcpy(res, d_intmed2, sizeof(double),cudaMemcpyDeviceToHost));
+  /* /\* get from gpu *\/ */
+  /* CHECK(cudaMemcpy(res, d_intmed2, sizeof(double),cudaMemcpyDeviceToHost)); */
+
+  /* SOMEHOW!! this does not get reduced to 1 entry but 2 */
+  double *what2;
+  what2=(double*)malloc(2*sizeof(double));
+  memset(what2,0,2*sizeof(double));
+  CHECK(cudaMemcpy(what2, d_intmed2, 2*sizeof(double),cudaMemcpyDeviceToHost));
+  *res = vector_add(what2, 2);
+
   CHECK(cudaDeviceSynchronize());
 }
 
-void vector_prod_gpu(double *res, double *d_v, double *d_w, double *d_intmed1, double *d_intmed2, int Nx, int Ny) {
-
-  double *d_intmed3;
-  CHECK(cudaMalloc((void **)&d_intmed3, npts*sizeof(double)));
-  CHECK(cudaMemset(d_intmed3, 0, npts*sizeof(double)));
+void vector_prod_gpu(double *res, double *d_v, double *d_w, double *d_intmed1, double *d_intmed2, double *d_intmed3, int nx, int ny) {
 
   /* set intmeds to 0 */
   CHECK(cudaMemset(d_intmed1, 0, npts*sizeof(double)));
   CHECK(cudaMemset(d_intmed2, 0, npts*sizeof(double)));
+  CHECK(cudaMemset(d_intmed3, 0, npts*sizeof(double)));
 
   /* multiply all the vector entries and store the results in d_intmed1*/
-  vector_multiply_entries_gpu<<<grid, block>>>(d_intmed1, d_v, d_w, Nx, Ny);
+  vector_multiply_entries_gpu<<<grid, block>>>(d_intmed1, d_v, d_w, nx, ny);
+  CHECK(cudaDeviceSynchronize());
+
+  double *what1;
+  double crap1 = 0.0;
+  what1=(double*)malloc(npts*sizeof(double));
+  memset(what1,0,npts*sizeof(double));
+  CHECK(cudaMemcpy(what1, d_intmed1, npts*sizeof(double),cudaMemcpyDeviceToHost));
+  crap1 = vector_add(what1, npts);
+
+  printf("yes %f\n", crap1);
 
   /* sum up all the entries */
   /* add as much as possible */
   reduceUnrolling<<<grid2, block2>>>(d_intmed1, d_intmed2, npts);
+  CHECK(cudaDeviceSynchronize());
   /* add the rest too */
   /* CHECK(cudaMemset(d_intmed1, 0, npts*sizeof(double))); */
   reduceUnrolling<<<grid3, block3>>>(d_intmed2, d_intmed3, nblk);
+  CHECK(cudaDeviceSynchronize());
+  /* printf("before %f\n", *res); */
 
-  /* get from gpu */
-  CHECK(cudaMemcpy(res, d_intmed3, sizeof(double),cudaMemcpyDeviceToHost));
-  printf("%f\n", *res);
+  /* /\* get from gpu *\/ */
+  /* CHECK(cudaMemcpy(res, d_intmed3, sizeof(double),cudaMemcpyDeviceToHost)); */
+
+  double *what2;
+  what2=(double*)malloc(2*sizeof(double));
+  memset(what2,0,2*sizeof(double));
+  CHECK(cudaMemcpy(what2, d_intmed2, 1*sizeof(double),cudaMemcpyDeviceToHost));
+  *res = vector_add(what2, 2);
+
+
+  /* printf("after %f\n", *res); */
   CHECK(cudaDeviceSynchronize());
 }
 
