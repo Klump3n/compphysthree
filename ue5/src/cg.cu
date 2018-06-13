@@ -92,44 +92,82 @@ double cg(double *x, double *r, int maxiter, double rel, int *status)
 
 double cg_gpu(double *x, double *r, int maxiter, double rel, int *status) {
 
+  /* legacy until port is done */
+  double *p,*s;
+
+  s=(double*)malloc(npts*sizeof(double));
+  p=(double*)malloc(npts*sizeof(double));
+
+  memset(x,0,npts*sizeof(double));
+  memset(s,0,npts*sizeof(double));
+  /* legacy until port is done */
+
   int k;
   double ar,as,alpha,beta,rn,rnold,rn0;
-  double *d_p, *d_s, *d_r, *d_rr;
+  double *d_p, *d_s, *d_r/* , *d_rr */;
 
   CHECK(cudaMalloc((void **)&d_p, npts*sizeof(double)));
   CHECK(cudaMalloc((void **)&d_s, npts*sizeof(double)));
   CHECK(cudaMalloc((void **)&d_r, npts*sizeof(double)));
-  CHECK(cudaMalloc((void **)&d_rr, npts*sizeof(double)));
+  /* CHECK(cudaMalloc((void **)&d_rr, npts*sizeof(double))); */
   /* s=(double*)malloc(npts*sizeof(double)); */
   /* p=(double*)malloc(npts*sizeof(double)); */
 
   CHECK(cudaMemset(d_p, 0, npts*sizeof(double)));
   CHECK(cudaMemset(d_s, 0, npts*sizeof(double)));
   CHECK(cudaMemset(d_r, 0, npts*sizeof(double)));
-  CHECK(cudaMemset(d_rr, 0, npts*sizeof(double)));
+  /* CHECK(cudaMemset(d_rr, 0, npts*sizeof(double))); */
   /* memset(x,0,npts*sizeof(double)); */
   /* memset(s,0,npts*sizeof(double)); */
 
   /* r auf gpu laden */
   CHECK(cudaMemcpy(d_r, r, npts*sizeof(double), cudaMemcpyHostToDevice));
 
-  rn = norm_sqr_gpu(r, d_rr, Nx, Ny);
+  /* this kind of violates the requirement that we only have to transfer O(1) doubles... */
+  rn = norm_sqr_gpu(d_r, Nx, Ny);
 
-  /* /\* unroll EC *\/ */
-  /* unsigned int blockDimX = 128; /\* 32*k *\/ */
-  /* unsigned int Nunroll = 8; */
-  /* unsigned int gridDimX = Nx * Ny / Nunroll / blockDimX; */
+/*   assign_v2v_gpu(d_p,d_r, Nx, Ny); */
+/*   rel*=rel; */
+/*   k=0; */
 
+/*   while (k<maxiter) */
+/*     { */
+/*       laplace_2d_gpu(d_s,d_p, Nx, Ny); */
+/*       /\* ar=vector_prod(p,r); *\/ */
+/*       /\* as=vector_prod(p,s); *\/ */
+/*       alpha=ar/as; */
+/*       mul_add_gpu(d_x,alpha,d_p, Nx, Ny); */
+/*       mul_add_gpu(d_r,-alpha,d_s, Nx, Ny); */
+/*       rnold=rn; */
+/*       rn=norm_sqr(r); */
+/*       k+=1; */
+/* #ifdef DEBUG */
+/*       if (k % 10 == 0) */
+/*         { */
+/*           printf("Iter %d, rel. Residuumnorm: %e\n",k,sqrt(rn/rn0)); */
+/*         } */
+/* #endif */
+/*       if ((rn/rn0)<rel) */
+/*         { */
+/*           break; */
+/*         } */
+/*       beta=rn/rnold; */
+/*       update_p_gpu(r,beta,p, Nx, Ny); */
+/*     } */
 
-  /* dim3 block2 (256,1); */
-  /* int nblk = (npts + (block2.x*Nunroll) - 1)/(block2.x*Nunroll); */
-  /* dim3 grid2 (nblk,1); */
-  /* /\* rn=norm_sqr(r); *\/ */
-  /* assign_v2v_gpu(d_rr, d_r); */
-  /* vector_prod_pre_gpu<<<grid2, block2>>>(d_rr, d_r, Nx, Ny); */
-  /* reduceUnrolling(d_rr, d_rr, npts); */
-  /* rn = vector_add(d_rr, grid2.x); */
-  /* /\* rn=norm_sqr(rr); *\/ */
+/* #ifdef DEBUG */
+/*   printf("Rel. Residuumnorm nach %d Iterationen: %e\n",k,sqrt(rn/rn0)); */
+/* #endif */
+
+/*   if ((rn/rn0<=rel) && (k<=maxiter)) */
+/*     *status=k; */
+/*   if (rn/rn0>rel) */
+/*     *status=-1; */
+
+/*   free(s); */
+/*   free(p); */
+
+/*   return sqrt(rn); */
 
   rn0=rn;
   status[0]=0;
@@ -139,18 +177,18 @@ double cg_gpu(double *x, double *r, int maxiter, double rel, int *status) {
   if (rn==0.0)
     return rn;
 
-  assign_v2v_gpu(d_p,d_r, Nx, Ny);
+  assign_v2v(p,r);
   rel*=rel;
   k=0;
 
   while (k<maxiter)
     {
-      laplace_2d_gpu(d_s,d_p, Nx, Ny);
-      /* ar=vector_prod(p,r); */
-      /* as=vector_prod(p,s); */
+      laplace_2d(s,p);
+      ar=vector_prod(p,r);
+      as=vector_prod(p,s);
       alpha=ar/as;
-      mul_add_gpu(d_x,alpha,d_p, Nx, Ny);
-      mul_add_gpu(d_r,-alpha,d_s, Nx, Ny);
+      mul_add(x,alpha,p);
+      mul_add(r,-alpha,s);
       rnold=rn;
       rn=norm_sqr(r);
       k+=1;
@@ -165,7 +203,7 @@ double cg_gpu(double *x, double *r, int maxiter, double rel, int *status) {
           break;
         }
       beta=rn/rnold;
-      update_p_gpu(r,beta,p, Nx, Ny);
+      update_p(r,beta,p);
     }
 
 #ifdef DEBUG

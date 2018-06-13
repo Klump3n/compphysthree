@@ -112,19 +112,34 @@ double norm_sqr(double *v)
    return r;
 }
 
-double norm_sqr_gpu(double *r, double *rr, int Nx, int Ny) {
-  /* unroll EC */
-  unsigned int Nunroll = 8;
+double norm_sqr_gpu(double *d_r, int Nx, int Ny) {
 
-  dim3 block2 (256,1);
+  /* stole this from the main function */
+  unsigned int Nunroll = 8;
+  int blockSizeX = 256;
+  dim3 block2 (blockSizeX, 1);
   int nblk = (npts + (block2.x*Nunroll) - 1)/(block2.x*Nunroll);
   dim3 grid2 (nblk,1);
 
-  /* rn=norm_sqr(r); */
-  assign_v2v_gpu(rr,r);
-  vector_prod_pre_gpu<<<grid2, block2>>>(rr, r, Nx, Ny);
-  reduceUnrolling(rr, rr, npts);
-  double rn = vector_add(rr, grid2.x);
+
+  double *d_rr;
+  CHECK(cudaMalloc((void **)&d_rr, npts*sizeof(double)));
+  CHECK(cudaMemset(d_rr, 0, npts*sizeof(double)));
+
+
+  double *r;
+  r=(double*)malloc(blockSizeX*sizeof(double));
+  memset(r,0,blockSizeX*sizeof(double));
+
+  vector_square_entries_gpu<<<grid, block>>>(d_r, Nx, Ny);
+
+  /* assign_v2v_gpu(rr,r); */
+  /* vector_prod_pre_gpu<<<grid2, block2>>>(rr, r, Nx, Ny); */
+  reduceUnrolling<<<grid2, block2>>>(d_r, d_rr, npts);
+
+  CHECK(cudaMemcpy(r, d_rr, nblk * sizeof(double),cudaMemcpyDeviceToHost));
+
+  double rn = vector_add(r, grid2.x);
   return rn;
 }
 
@@ -147,6 +162,17 @@ double vector_add(double *v, const int n) {
       r+=v[idx];
     }
   return r;
+}
+
+__global__ void vector_square_entries_gpu(double *v, int nx, int ny) {
+  unsigned int ix = threadIdx.x + blockIdx.x * blockDim.x + 1;
+  unsigned int iy = threadIdx.y + blockIdx.y * blockDim.y + 1;
+  unsigned int idx = iy * (nx+2) + ix;
+
+  if (ix<=nx && iy<=ny)
+    {
+      v[idx] = v[idx]*v[idx];
+    }
 }
 
 __global__ void vector_prod_pre_gpu(double *v, double *w, int nx, int ny)

@@ -124,9 +124,9 @@ int main(int argc, char **argv)
    v[coord2index(Nx/2,Nx/2)]=1.0; // v=0, ausser am Gitterpunkt (Nx/2+1,Ny/2+1)
    print_vector("v",v,1);
 
-   cg(w,v,1000,1e-10,&status);
+   /* cg(w,v,1000,1e-10,&status); */
+   cg_gpu(w,v,1000,1e-10,&status);
 
-   
 
    print_vector("x",w,0);
 
