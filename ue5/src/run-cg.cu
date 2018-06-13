@@ -89,6 +89,26 @@ int main(int argc, char **argv)
 
    // Test reduction
    int Nunroll=8;
+
+   /* unrolling stage 1 */
+   int blockSizeX = 256;
+   nblk = (npts + (block2.x*Nunroll) - 1)/(block2.x*Nunroll);
+
+   block2.x = blockSizeX;
+   block2.y = 1;
+   block2.z = 1;
+   grid2.x = nblk;
+   grid2.y = 1;
+   grid2.z = 1;
+
+   /* unrolling stage 2 */
+   block3.x = 1;
+   block3.y = 1;
+   block3.z = 1;
+   grid3.x = blockSizeX;        /* how many blocks in stage 1 */
+   grid3.y = 1;
+   grid3.z = 1;
+
    if (npts>256 && Nunroll>1)
    {
       double cpu_sum=0.0;
@@ -97,9 +117,6 @@ int main(int argc, char **argv)
       iElaps = seconds() - iStart;
       printf("cpu reduce      elapsed %f sec cpu_sum: %f\n", iElaps, cpu_sum);
 
-      dim3 block2 (256,1);
-      int nblk = (npts + (block2.x*Nunroll) - 1)/(block2.x*Nunroll);
-      dim3 grid2 (nblk,1);
       CHECK(cudaMalloc((void **)&d_x, nblk*sizeof(double)));
       CHECK(cudaMemset(d_x,0,nblk*sizeof(double)));
       x=(double*)malloc(nblk*sizeof(double));
@@ -124,8 +141,16 @@ int main(int argc, char **argv)
    v[coord2index(Nx/2,Nx/2)]=1.0; // v=0, ausser am Gitterpunkt (Nx/2+1,Ny/2+1)
    print_vector("v",v,1);
 
+   /* iStart = seconds(); */
    /* cg(w,v,1000,1e-10,&status); */
+   /* iElaps = seconds() - iStart; */
+   /* printf("cpu cg      elapsed %f\n", iElaps); */
+
+
+   iStart = seconds();
    cg_gpu(w,v,1000,1e-10,&status);
+   iElaps = seconds() - iStart;
+   printf("gpu cg      elapsed %f\n", iElaps);
 
 
    print_vector("x",w,0);

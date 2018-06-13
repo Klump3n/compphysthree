@@ -112,35 +112,50 @@ double norm_sqr(double *v)
    return r;
 }
 
-double norm_sqr_gpu(double *d_r, int Nx, int Ny) {
+/* this is super slow */
+void norm_sqr_gpu(double *res, double *d_r, double *d_intmed1, double *d_intmed2, int Nx, int Ny) {
 
-  /* stole this from the main function */
-  unsigned int Nunroll = 8;
-  int blockSizeX = 256;
-  dim3 block2 (blockSizeX, 1);
-  int nblk = (npts + (block2.x*Nunroll) - 1)/(block2.x*Nunroll);
-  dim3 grid2 (nblk,1);
+  /* set intmeds to 0 */
+  CHECK(cudaMemset(d_intmed1, 0, npts*sizeof(double)));
+  CHECK(cudaMemset(d_intmed2, 0, npts*sizeof(double)));
 
-
-  double *d_rr;
-  CHECK(cudaMalloc((void **)&d_rr, npts*sizeof(double)));
-  CHECK(cudaMemset(d_rr, 0, npts*sizeof(double)));
-
-
-  double *r;
-  r=(double*)malloc(blockSizeX*sizeof(double));
-  memset(r,0,blockSizeX*sizeof(double));
-
+  /* square all entries of the vector */
   vector_square_entries_gpu<<<grid, block>>>(d_r, Nx, Ny);
 
-  /* assign_v2v_gpu(rr,r); */
-  /* vector_prod_pre_gpu<<<grid2, block2>>>(rr, r, Nx, Ny); */
-  reduceUnrolling<<<grid2, block2>>>(d_r, d_rr, npts);
+  /* add as much as possible */
+  reduceUnrolling<<<grid2, block2>>>(d_r, d_intmed1, npts);
+  /* add the rest too */
+  reduceUnrolling<<<grid3, block3>>>(d_intmed1, d_intmed2, nblk);
 
-  CHECK(cudaMemcpy(r, d_rr, nblk * sizeof(double),cudaMemcpyDeviceToHost));
+  /* get from gpu */
+  CHECK(cudaMemcpy(res, d_intmed2, sizeof(double),cudaMemcpyDeviceToHost));
+  CHECK(cudaDeviceSynchronize());
+}
 
-  double rn = vector_add(r, grid2.x);
-  return rn;
+void vector_prod_gpu(double *res, double *d_v, double *d_w, double *d_intmed1, double *d_intmed2, int Nx, int Ny) {
+
+  double *d_intmed3;
+  CHECK(cudaMalloc((void **)&d_intmed3, npts*sizeof(double)));
+  CHECK(cudaMemset(d_intmed3, 0, npts*sizeof(double)));
+
+  /* set intmeds to 0 */
+  CHECK(cudaMemset(d_intmed1, 0, npts*sizeof(double)));
+  CHECK(cudaMemset(d_intmed2, 0, npts*sizeof(double)));
+
+  /* multiply all the vector entries and store the results in d_intmed1*/
+  vector_multiply_entries_gpu<<<grid, block>>>(d_intmed1, d_v, d_w, Nx, Ny);
+
+  /* sum up all the entries */
+  /* add as much as possible */
+  reduceUnrolling<<<grid2, block2>>>(d_intmed1, d_intmed2, npts);
+  /* add the rest too */
+  /* CHECK(cudaMemset(d_intmed1, 0, npts*sizeof(double))); */
+  reduceUnrolling<<<grid3, block3>>>(d_intmed2, d_intmed3, nblk);
+
+  /* get from gpu */
+  CHECK(cudaMemcpy(res, d_intmed3, sizeof(double),cudaMemcpyDeviceToHost));
+  printf("%f\n", *res);
+  CHECK(cudaDeviceSynchronize());
 }
 
 double vector_prod(double *v, double *w)
@@ -175,7 +190,7 @@ __global__ void vector_square_entries_gpu(double *v, int nx, int ny) {
     }
 }
 
-__global__ void vector_prod_pre_gpu(double *v, double *w, int nx, int ny)
+__global__ void vector_multiply_entries_gpu(double *res, double *v, double *w, int nx, int ny)
 {
   unsigned int ix = threadIdx.x + blockIdx.x * blockDim.x + 1;
   unsigned int iy = threadIdx.y + blockIdx.y * blockDim.y + 1;
@@ -183,7 +198,7 @@ __global__ void vector_prod_pre_gpu(double *v, double *w, int nx, int ny)
 
   if (ix<=nx && iy<=ny)
     {
-      v[idx]=w[idx] * v[idx];
+      res[idx] = v[idx] * w[idx];
     }
 }
 

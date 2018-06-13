@@ -18,6 +18,9 @@
 EXTERN int Nx, Ny, npts;
 EXTERN int *active;
 EXTERN dim3 block, grid;
+EXTERN int nblk;
+EXTERN dim3 block2, grid2;      /* unroll stage 1 */
+EXTERN dim3 block3, grid3;      /* unroll stage 2 */
 
 #undef EXTERN
 
