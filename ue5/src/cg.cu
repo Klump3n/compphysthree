@@ -53,11 +53,11 @@ double cg(double *x, double *r, int maxiter, double rel, int *status)
    while (k<maxiter)
    {
       laplace_2d(s,p);
-      printf("cpu norm laplace = %f\n", norm_sqr(s));
+      /* printf("cpu norm laplace = %f\n", norm_sqr(s)); */
       ar=vector_prod(p,r);
-      printf("cpu ar = %f\n", ar);
+      /* printf("cpu ar = %f\n", ar); */
       as=vector_prod(p,s);
-      printf("cpu as = %f\n", as);
+      /* printf("cpu as = %f\n", as); */
       alpha=ar/as;
       mul_add(x,alpha,p);
       mul_add(r,-alpha,s);
@@ -95,16 +95,6 @@ double cg(double *x, double *r, int maxiter, double rel, int *status)
 
 double cg_gpu(double *x, double *r, int maxiter, double rel, int *status) {
 
-  /* legacy until port is done */
-  double *p,*s;
-
-  s=(double*)malloc(npts*sizeof(double));
-  p=(double*)malloc(npts*sizeof(double));
-
-  memset(x,0,npts*sizeof(double));
-  memset(s,0,npts*sizeof(double));
-  /* legacy until port is done */
-
   int k;
   double ar,as,alpha,beta,rn,rnold,rn0;
   double *d_p, *d_s, *d_r, *d_x, *d_intmed1, *d_intmed2, *d_intmed3;
@@ -118,8 +108,6 @@ double cg_gpu(double *x, double *r, int maxiter, double rel, int *status) {
   CHECK(cudaMalloc((void **)&d_intmed1, npts*sizeof(double)));
   CHECK(cudaMalloc((void **)&d_intmed2, npts*sizeof(double)));
   CHECK(cudaMalloc((void **)&d_intmed3, npts*sizeof(double)));
-  /* s=(double*)malloc(npts*sizeof(double)); */
-  /* p=(double*)malloc(npts*sizeof(double)); */
 
   CHECK(cudaMemset(d_p, 0, npts*sizeof(double)));
   CHECK(cudaMemset(d_s, 0, npts*sizeof(double)));
@@ -128,28 +116,13 @@ double cg_gpu(double *x, double *r, int maxiter, double rel, int *status) {
   CHECK(cudaMemset(d_intmed1, 0, npts*sizeof(double)));
   CHECK(cudaMemset(d_intmed2, 0, npts*sizeof(double)));
   CHECK(cudaMemset(d_intmed3, 0, npts*sizeof(double)));
-  /* memset(x,0,npts*sizeof(double)); */
-  /* memset(s,0,npts*sizeof(double)); */
+
+  double iStart = seconds();
 
   /* r auf gpu laden */
   CHECK(cudaMemcpy(d_r, r, npts*sizeof(double), cudaMemcpyHostToDevice));
 
-  /* this is super slow on the gpu */
-  /* double iStart, iElaps; */
-  /* iStart = seconds(); */
-
-  norm_sqr_gpu(&rn, d_r, d_intmed1, d_intmed2, Nx, Ny);
-  printf("norm sqr gpu = %f\n", rn);
-  printf("norm sqr cpu = %f\n", norm_sqr(r));
-  /* iElaps = seconds() - iStart; */
-  /* printf("GPU elapsed %f sec\n", iElaps); */
-
-
-  /* iStart = seconds(); */
-  /* rn = norm_sqr(r); */
-  /* iElaps = seconds() - iStart; */
-  /* printf("CPU elapsed %f sec\n", iElaps); */
-
+  rn = norm_sqr(r);             /* this is quicker than the gpu version */
   rn0=rn;
   status[0]=0;
 #ifdef DEBUG
@@ -159,30 +132,27 @@ double cg_gpu(double *x, double *r, int maxiter, double rel, int *status) {
     return rn;
 
   assign_v2v_gpu<<<grid, block>>>(d_p,d_r, Nx, Ny);
+  /* CHECK(cudaDeviceSynchronize()); */
+
   rel*=rel;
   k=0;
 
-  double dummy = 0.0;
   while (k<maxiter)
     {
       laplace_2d_gpu<<<grid, block>>>(d_s,d_p, Nx, Ny);
-
-      norm_sqr_gpu(&dummy, d_s, d_intmed1, d_intmed2, Nx, Ny);
-      printf("gpu norm laplace = %f\n", dummy);
+      /* CHECK(cudaDeviceSynchronize()); */
 
       vector_prod_gpu(&ar, d_p, d_r, d_intmed1, d_intmed2, d_intmed3, Nx, Ny);
-      printf("gpu ar = %f\n", ar);
       vector_prod_gpu(&as, d_p, d_s, d_intmed1, d_intmed2, d_intmed3, Nx, Ny);
-      printf("gpu as = %f\n", as);
 
-      /* ar=vector_prod(p,r); */
-      /* as=vector_prod(p,s); */
       alpha=ar/as;
       mul_add_gpu<<<grid, block>>>(d_x,alpha,d_p, Nx, Ny);
+      /* CHECK(cudaDeviceSynchronize()); */
       mul_add_gpu<<<grid, block>>>(d_r,-alpha,d_s, Nx, Ny);
+      /* CHECK(cudaDeviceSynchronize()); */
       rnold=rn;
       norm_sqr_gpu(&rn, d_r, d_intmed1, d_intmed2, Nx, Ny);
-      /* rn=norm_sqr(r); */
+
       k+=1;
 #ifdef DEBUG
       if (k % 10 == 0)
@@ -196,6 +166,7 @@ double cg_gpu(double *x, double *r, int maxiter, double rel, int *status) {
         }
       beta=rn/rnold;
       update_p_gpu<<<grid, block>>>(d_r,beta,d_p, Nx, Ny);
+      /* CHECK(cudaDeviceSynchronize()); */
     }
 
 #ifdef DEBUG
@@ -206,9 +177,6 @@ double cg_gpu(double *x, double *r, int maxiter, double rel, int *status) {
     *status=k;
   if (rn/rn0>rel)
     *status=-1;
-
-  free(s);
-  free(p);
 
   return sqrt(rn);
 

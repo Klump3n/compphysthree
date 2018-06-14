@@ -119,37 +119,20 @@ void norm_sqr_gpu(double *res, double *d_r, double *d_intmed1, double *d_intmed2
   CHECK(cudaMemset(d_intmed2, 0, npts*sizeof(double)));
 
   /* square all entries of the vector */
-  vector_square_entries_gpu<<<grid, block>>>(d_r, nx, ny);
-  CHECK(cudaDeviceSynchronize());
-  /* funktioniert */
+  vector_square_entries_gpu<<<grid, block>>>(d_intmed1, d_r, nx, ny);
+  /* CHECK(cudaDeviceSynchronize()); */
 
   /* add as much as possible */
-  reduceUnrolling<<<grid2, block2>>>(d_r, d_intmed1, npts);
-  CHECK(cudaDeviceSynchronize());
-
-  /* double *what1; */
-  /* double crap1 = 0.0; */
-  /* what1=(double*)malloc(nblk*sizeof(double)); */
-  /* memset(what1,0,nblk*sizeof(double)); */
-  /* CHECK(cudaMemcpy(what1, d_intmed1, nblk*sizeof(double),cudaMemcpyDeviceToHost)); */
-  /* crap1 = vector_add(what1, nblk); */
-  /* printf("unrolling stage 1 %f\n", crap1); */
+  reduceUnrolling<<<grid2, block2>>>(d_intmed1, d_intmed2, npts);
+  /* CHECK(cudaDeviceSynchronize()); */
 
   /* add the rest too */
-  reduceUnrolling<<<grid3, block3>>>(d_intmed1, d_intmed2, nblk);
-  CHECK(cudaDeviceSynchronize());
+  reduceUnrolling<<<grid3, block3>>>(d_intmed2, d_intmed1, nblk);
+  /* CHECK(cudaDeviceSynchronize()); */
 
-  /* /\* get from gpu *\/ */
-  /* CHECK(cudaMemcpy(res, d_intmed2, sizeof(double),cudaMemcpyDeviceToHost)); */
+  CHECK(cudaMemcpy(res, d_intmed1, 1*sizeof(double),cudaMemcpyDeviceToHost));
 
-  /* SOMEHOW!! this does not get reduced to 1 entry but 2 */
-  double *what2;
-  what2=(double*)malloc(2*sizeof(double));
-  memset(what2,0,2*sizeof(double));
-  CHECK(cudaMemcpy(what2, d_intmed2, 2*sizeof(double),cudaMemcpyDeviceToHost));
-  *res = vector_add(what2, 2);
-
-  CHECK(cudaDeviceSynchronize());
+  /* CHECK(cudaDeviceSynchronize()); */
 }
 
 void vector_prod_gpu(double *res, double *d_v, double *d_w, double *d_intmed1, double *d_intmed2, double *d_intmed3, int nx, int ny) {
@@ -161,39 +144,20 @@ void vector_prod_gpu(double *res, double *d_v, double *d_w, double *d_intmed1, d
 
   /* multiply all the vector entries and store the results in d_intmed1*/
   vector_multiply_entries_gpu<<<grid, block>>>(d_intmed1, d_v, d_w, nx, ny);
-  CHECK(cudaDeviceSynchronize());
-
-  double *what1;
-  double crap1 = 0.0;
-  what1=(double*)malloc(npts*sizeof(double));
-  memset(what1,0,npts*sizeof(double));
-  CHECK(cudaMemcpy(what1, d_intmed1, npts*sizeof(double),cudaMemcpyDeviceToHost));
-  crap1 = vector_add(what1, npts);
-
-  printf("yes %f\n", crap1);
+  /* CHECK(cudaDeviceSynchronize()); */
 
   /* sum up all the entries */
   /* add as much as possible */
   reduceUnrolling<<<grid2, block2>>>(d_intmed1, d_intmed2, npts);
-  CHECK(cudaDeviceSynchronize());
+  /* CHECK(cudaDeviceSynchronize()); */
+
   /* add the rest too */
-  /* CHECK(cudaMemset(d_intmed1, 0, npts*sizeof(double))); */
   reduceUnrolling<<<grid3, block3>>>(d_intmed2, d_intmed3, nblk);
-  CHECK(cudaDeviceSynchronize());
-  /* printf("before %f\n", *res); */
+  /* CHECK(cudaDeviceSynchronize()); */
 
-  /* /\* get from gpu *\/ */
-  /* CHECK(cudaMemcpy(res, d_intmed3, sizeof(double),cudaMemcpyDeviceToHost)); */
+  CHECK(cudaMemcpy(res, d_intmed2, sizeof(double),cudaMemcpyDeviceToHost));
 
-  double *what2;
-  what2=(double*)malloc(2*sizeof(double));
-  memset(what2,0,2*sizeof(double));
-  CHECK(cudaMemcpy(what2, d_intmed2, 1*sizeof(double),cudaMemcpyDeviceToHost));
-  *res = vector_add(what2, 2);
-
-
-  /* printf("after %f\n", *res); */
-  CHECK(cudaDeviceSynchronize());
+  /* CHECK(cudaDeviceSynchronize()); */
 }
 
 double vector_prod(double *v, double *w)
@@ -217,14 +181,14 @@ double vector_add(double *v, const int n) {
   return r;
 }
 
-__global__ void vector_square_entries_gpu(double *v, int nx, int ny) {
+__global__ void vector_square_entries_gpu(double *v, double *w, int nx, int ny) {
   unsigned int ix = threadIdx.x + blockIdx.x * blockDim.x + 1;
   unsigned int iy = threadIdx.y + blockIdx.y * blockDim.y + 1;
   unsigned int idx = iy * (nx+2) + ix;
 
   if (ix<=nx && iy<=ny)
     {
-      v[idx] = v[idx]*v[idx];
+      v[idx] = w[idx]*w[idx];
     }
 }
 

@@ -88,15 +88,14 @@ int main(int argc, char **argv)
    grid.z=1;
 
    // Test reduction
-   int Nunroll=8;
+   int Nunroll=2048;
 
    /* unrolling stage 1 */
    int blockSizeX = 256;
-   nblk = (npts + (block2.x*Nunroll) - 1)/(block2.x*Nunroll);
-
    block2.x = blockSizeX;
    block2.y = 1;
    block2.z = 1;
+   nblk = (npts + (block2.x*Nunroll) - 1)/(block2.x*Nunroll);
    grid2.x = nblk;
    grid2.y = 1;
    grid2.z = 1;
@@ -109,58 +108,60 @@ int main(int argc, char **argv)
    grid3.y = 1;
    grid3.z = 1;
 
-   if (npts>256 && Nunroll>1)
-   {
-      double cpu_sum=0.0;
-      iStart = seconds();
-      for (int i = 0; i < npts; i++) cpu_sum += v[i];
-      iElaps = seconds() - iStart;
-      printf("cpu reduce      elapsed %f sec cpu_sum: %f\n", iElaps, cpu_sum);
+   /* if (npts>256 && Nunroll>1) */
+   /* { */
+   /*    double cpu_sum=0.0; */
+   /*    iStart = seconds(); */
+   /*    for (int i = 0; i < npts; i++) cpu_sum += v[i]; */
+   /*    iElaps = seconds() - iStart; */
+   /*    printf("cpu reduce      elapsed %f sec cpu_sum: %f\n", iElaps, cpu_sum); */
 
-      CHECK(cudaMalloc((void **)&d_x, nblk*sizeof(double)));
-      CHECK(cudaMemset(d_x,0,nblk*sizeof(double)));
-      x=(double*)malloc(nblk*sizeof(double));
-      CHECK(cudaDeviceSynchronize());
-      iStart = seconds();
-      reduceUnrolling<<<grid2, block2>>>(d_v, d_x, npts);
-      CHECK(cudaDeviceSynchronize());
-      iElaps = seconds() - iStart;
-      CHECK(cudaMemcpy(x, d_x, nblk * sizeof(double),cudaMemcpyDeviceToHost));
+   /*    CHECK(cudaMalloc((void **)&d_x, nblk*sizeof(double))); */
+   /*    CHECK(cudaMemset(d_x,0,nblk*sizeof(double))); */
+   /*    x=(double*)malloc(nblk*sizeof(double)); */
+   /*    CHECK(cudaDeviceSynchronize()); */
+   /*    iStart = seconds(); */
+   /*    reduceUnrolling<<<grid2, block2>>>(d_v, d_x, npts); */
+   /*    CHECK(cudaDeviceSynchronize()); */
+   /*    iElaps = seconds() - iStart; */
+   /*    CHECK(cudaMemcpy(x, d_x, nblk * sizeof(double),cudaMemcpyDeviceToHost)); */
 
-      double gpu_sum = 0.0;
-      for (int i = 0; i < grid2.x; i++) gpu_sum += x[i];
+   /*    double gpu_sum = 0.0; */
+   /*    for (int i = 0; i < grid2.x; i++) gpu_sum += x[i]; */
 
-      printf("gpu Unrolling  elapsed %f sec gpu_sum: %f <<<grid %d block "
-             "%d>>>\n", iElaps, gpu_sum, grid2.x, block2.x);
+   /*    printf("gpu Unrolling  elapsed %f sec gpu_sum: %f <<<grid %d block " */
+   /*           "%d>>>\n", iElaps, gpu_sum, grid2.x, block2.x); */
 
-      assert(abs((gpu_sum-cpu_sum)/cpu_sum)<sqrt(npts)*DBL_EPSILON);
-   }
+   /*    assert(abs((gpu_sum-cpu_sum)/cpu_sum)<sqrt(npts)*DBL_EPSILON); */
+   /* } */
 
-   /* // Einheitsvektor */
-   /* memset(v, 0, nBytes); */
-   /* v[coord2index(Nx/2,Nx/2)]=1.0; // v=0, ausser am Gitterpunkt (Nx/2+1,Ny/2+1) */
+   // Einheitsvektor
+   memset(v, 0, nBytes);
+   v[coord2index(Nx/2,Nx/2)]=1.0; // v=0, ausser am Gitterpunkt (Nx/2+1,Ny/2+1)
    /* print_vector("v",v,1); */
 
-   int maxiter = 3;
+   int maxiter = N*N;
 
+   double cpuTime, gpuTime;
    iStart = seconds();
    cg(w,v,maxiter,1e-10,&status);
-   iElaps = seconds() - iStart;
+   cpuTime = iElaps = seconds() - iStart;
    printf("cpu cg      elapsed %f\n", iElaps);
 
-   /* memset(w, 0, nBytes); */
-   /* // Einheitsvektor */
-   /* memset(v, 0, nBytes); */
-   /* v[coord2index(Nx/2,Nx/2)]=1.0; // v=0, ausser am Gitterpunkt (Nx/2+1,Ny/2+1) */
+   memset(w, 0, nBytes);
+   // Einheitsvektor
+   memset(v, 0, nBytes);
+   v[coord2index(Nx/2,Nx/2)]=1.0; // v=0, ausser am Gitterpunkt (Nx/2+1,Ny/2+1)
+
    /* print_vector("v",v,1); */
-   
 
    iStart = seconds();
    cg_gpu(w,v,maxiter,1e-10,&status);
-   iElaps = seconds() - iStart;
+   gpuTime = iElaps = seconds() - iStart;
    printf("gpu cg      elapsed %f\n", iElaps);
 
-   print_vector("x",w,0);
+   printf("Speedup = %f\n", cpuTime/gpuTime);
+   /* print_vector("x",w,0); */
 
    free(active);
    free(w);

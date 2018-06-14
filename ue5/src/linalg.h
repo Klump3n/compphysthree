@@ -20,7 +20,7 @@ extern __global__ void laplace_2d_gpu(double *w, double *v, int nx, int ny);
 extern double vector_add(double *v, const int n);
 extern void norm_sqr_gpu(double *res, double *d_r, double *d_intmed1, double *d_intmed2, int Nx, int Ny);
 extern __global__ void vector_multiply_entries_gpu(double *res, double *v, double *w, int nx, int ny);
-extern __global__ void vector_square_entries_gpu(double *v, int nx, int ny);
+extern __global__ void vector_square_entries_gpu(double *v, double *w, int nx, int ny);
 extern void vector_prod_gpu(double *res, double *d_v, double *d_w, double *d_intmed1, double *d_intmed2, double *d_intmed3, int nx, int ny);
 
 #endif
