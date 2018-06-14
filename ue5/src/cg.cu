@@ -147,20 +147,16 @@ double cg_gpu(double *x, double *r, int maxiter, double rel, int *status) {
   while (k<maxiter)
     {
       laplace_2d_gpu<<<grid, block>>>(d_s,d_p, Nx, Ny);
-      /* CHECK(cudaDeviceSynchronize()); */
-
-      /* alt_vect_prod<<<grid, block>>>(d_ar, d_p, d_r, Nx, Ny); */
-      /* CHECK(cudaDeviceSynchronize()); */
-      /* CHECK(cudaMemcpy(&ar, d_ar, sizeof(double),cudaMemcpyDeviceToHost)); */
 
       vector_prod_gpu(&ar, d_p, d_r, d_intmed1, d_intmed2, d_intmed3, Nx, Ny);
       vector_prod_gpu(&as, d_p, d_s, d_intmed1, d_intmed2, d_intmed3, Nx, Ny);
 
       alpha=ar/as;
+
       mul_add_gpu<<<grid, block>>>(d_x,alpha,d_p, Nx, Ny);
-      /* CHECK(cudaDeviceSynchronize()); */
+
       mul_add_gpu<<<grid, block>>>(d_r,-alpha,d_s, Nx, Ny);
-      /* CHECK(cudaDeviceSynchronize()); */
+
       rnold=rn;
       norm_sqr_gpu(&rn, d_r, d_intmed1, d_intmed2, Nx, Ny);
 
@@ -177,7 +173,7 @@ double cg_gpu(double *x, double *r, int maxiter, double rel, int *status) {
         }
       beta=rn/rnold;
       update_p_gpu<<<grid, block>>>(d_r,beta,d_p, Nx, Ny);
-      /* CHECK(cudaDeviceSynchronize()); */
+
     }
 
 #ifdef DEBUG
@@ -190,55 +186,5 @@ double cg_gpu(double *x, double *r, int maxiter, double rel, int *status) {
     *status=-1;
 
   return sqrt(rn);
-
-
-
-
-
-/*   assign_v2v(p,r); */
-/*   rel*=rel; */
-/*   k=0; */
-
-/*   while (k<maxiter) */
-/*     { */
-/*       laplace_2d(s,p); */
-/*       ar=vector_prod(p,r); */
-/*       as=vector_prod(p,s); */
-/*       alpha=ar/as; */
-/*       mul_add(x,alpha,p); */
-/*       mul_add(r,-alpha,s); */
-/*       rnold=rn; */
-/*       rn=norm_sqr(r); */
-/*       k+=1; */
-/* #ifdef DEBUG */
-/*       if (k % 10 == 0) */
-/*         { */
-/*           printf("Iter %d, rel. Residuumnorm: %e\n",k,sqrt(rn/rn0)); */
-/*         } */
-/* #endif */
-/*       if ((rn/rn0)<rel) */
-/*         { */
-/*           break; */
-/*         } */
-/*       beta=rn/rnold; */
-/*       update_p(r,beta,p); */
-/*     } */
-
-/* #ifdef DEBUG */
-/*   printf("Rel. Residuumnorm nach %d Iterationen: %e\n",k,sqrt(rn/rn0)); */
-/* #endif */
-
-/*   if ((rn/rn0<=rel) && (k<=maxiter)) */
-/*     *status=k; */
-/*   if (rn/rn0>rel) */
-/*     *status=-1; */
-
-/*   free(s); */
-/*   free(p); */
-
-/*   return sqrt(rn); */
-
-
-
 
 }

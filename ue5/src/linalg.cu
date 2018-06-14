@@ -120,31 +120,19 @@ void norm_sqr_gpu(double *res, double *d_r, double *d_intmed1, double *d_intmed2
 
   /* square all entries of the vector */
   vector_square_entries_gpu<<<grid, block>>>(d_intmed1, d_r, nx, ny);
-  /* CHECK(cudaDeviceSynchronize()); */
 
   /* add as much as possible */
   reduceUnrolling<<<grid2, block2>>>(d_intmed1, d_intmed2, npts);
-  /* CHECK(cudaDeviceSynchronize()); */
 
+  /* y tho */
   /* add the rest too */
-  reduceUnrolling<<<grid3, block3>>>(d_intmed2, d_intmed1, nblk);
+  reduceUnrolling<<<grid3, block3>>>(d_intmed2, d_intmed1, blockSizeX);
   /* CHECK(cudaDeviceSynchronize()); */
 
   CHECK(cudaMemcpy(res, d_intmed1, 1*sizeof(double),cudaMemcpyDeviceToHost));
 
-  /* CHECK(cudaDeviceSynchronize()); */
 }
 
-__global__ void alt_vect_prod(double *d_res, double *d_v, double *d_w, int nx, int ny) {
-  unsigned int ix = threadIdx.x + blockIdx.x * blockDim.x + 1;
-  unsigned int iy = threadIdx.y + blockIdx.y * blockDim.y + 1;
-  unsigned int idx = iy * (nx+2) + ix;
-
-  if (ix<=nx && iy<=ny)
-    {
-      *d_res += d_v[idx]*d_w[idx];
-    }
-}
 void vector_prod_gpu(double *res, double *d_v, double *d_w, double *d_intmed1, double *d_intmed2, double *d_intmed3, int nx, int ny) {
 
   /* set intmeds to 0 */
@@ -154,20 +142,17 @@ void vector_prod_gpu(double *res, double *d_v, double *d_w, double *d_intmed1, d
 
   /* multiply all the vector entries and store the results in d_intmed1*/
   vector_multiply_entries_gpu<<<grid, block>>>(d_intmed1, d_v, d_w, nx, ny);
-  /* CHECK(cudaDeviceSynchronize()); */
 
   /* sum up all the entries */
   /* add as much as possible */
   reduceUnrolling<<<grid2, block2>>>(d_intmed1, d_intmed2, npts);
-  /* CHECK(cudaDeviceSynchronize()); */
 
+  /* y tho */
   /* add the rest too */
-  reduceUnrolling<<<grid3, block3>>>(d_intmed2, d_intmed3, nblk);
+  reduceUnrolling<<<grid3, block3>>>(d_intmed2, d_intmed3, blockSizeX);
   /* CHECK(cudaDeviceSynchronize()); */
 
-  CHECK(cudaMemcpy(res, d_intmed2, sizeof(double),cudaMemcpyDeviceToHost));
-
-  /* CHECK(cudaDeviceSynchronize()); */
+  CHECK(cudaMemcpy(res, d_intmed3, sizeof(double),cudaMemcpyDeviceToHost));
 }
 
 double vector_prod(double *v, double *w)
