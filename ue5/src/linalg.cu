@@ -135,6 +135,16 @@ void norm_sqr_gpu(double *res, double *d_r, double *d_intmed1, double *d_intmed2
   /* CHECK(cudaDeviceSynchronize()); */
 }
 
+__global__ void alt_vect_prod(double *d_res, double *d_v, double *d_w, int nx, int ny) {
+  unsigned int ix = threadIdx.x + blockIdx.x * blockDim.x + 1;
+  unsigned int iy = threadIdx.y + blockIdx.y * blockDim.y + 1;
+  unsigned int idx = iy * (nx+2) + ix;
+
+  if (ix<=nx && iy<=ny)
+    {
+      *d_res += d_v[idx]*d_w[idx];
+    }
+}
 void vector_prod_gpu(double *res, double *d_v, double *d_w, double *d_intmed1, double *d_intmed2, double *d_intmed3, int nx, int ny) {
 
   /* set intmeds to 0 */

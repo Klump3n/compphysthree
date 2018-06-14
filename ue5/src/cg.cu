@@ -99,6 +99,13 @@ double cg_gpu(double *x, double *r, int maxiter, double rel, int *status) {
   double ar,as,alpha,beta,rn,rnold,rn0;
   double *d_p, *d_s, *d_r, *d_x, *d_intmed1, *d_intmed2, *d_intmed3;
 
+  double *d_ar;
+  CHECK(cudaMalloc((void **)&d_ar, sizeof(double)));
+  CHECK(cudaMemset(d_ar, 0, sizeof(double)));
+  double *d_as;
+  CHECK(cudaMalloc((void **)&d_as, sizeof(double)));
+  CHECK(cudaMemset(d_as, 0, sizeof(double)));
+
   CHECK(cudaMalloc((void **)&d_p, npts*sizeof(double)));
   CHECK(cudaMalloc((void **)&d_s, npts*sizeof(double)));
   CHECK(cudaMalloc((void **)&d_r, npts*sizeof(double)));
@@ -141,6 +148,10 @@ double cg_gpu(double *x, double *r, int maxiter, double rel, int *status) {
     {
       laplace_2d_gpu<<<grid, block>>>(d_s,d_p, Nx, Ny);
       /* CHECK(cudaDeviceSynchronize()); */
+
+      /* alt_vect_prod<<<grid, block>>>(d_ar, d_p, d_r, Nx, Ny); */
+      /* CHECK(cudaDeviceSynchronize()); */
+      /* CHECK(cudaMemcpy(&ar, d_ar, sizeof(double),cudaMemcpyDeviceToHost)); */
 
       vector_prod_gpu(&ar, d_p, d_r, d_intmed1, d_intmed2, d_intmed3, Nx, Ny);
       vector_prod_gpu(&as, d_p, d_s, d_intmed1, d_intmed2, d_intmed3, Nx, Ny);
