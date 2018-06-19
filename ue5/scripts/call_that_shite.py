@@ -14,7 +14,7 @@ dimy = 1
 
 cwd = os.getcwd()
 
-config = {
+old_config = {
     '32_1': {'N': 32, 'dimx': 128, 'dimy': 1},
     '32_2': {'N': 32, 'dimx': 256, 'dimy': 1},
 
@@ -56,6 +56,10 @@ config = {
     '1024_7': {'N': 1024, 'dimx': 32, 'dimy': 4},
 
 }
+
+config = { 
+    '2048_1': {'N': 2048, 'dimx': 128, 'dimy': 1},
+         }
 
 results = []
 

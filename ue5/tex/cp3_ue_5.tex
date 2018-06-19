@@ -150,6 +150,27 @@
 
 \section{Conjugate-Gradient auf der GPU}
 
+Die Funktionen aus den letzen Uebungen wurden so in das Grundgeruest von Uebung5.zip
+eingefuegt, dass nun der Conjugate-Gradient-Algorithmus parallelisiert auf der GPU
+ausgefuehrt werden kann. Fuer verschiedene Gittergroessen $N$ wurden die Laufzeiten
+bei verschiedenen execution-configurations und 10 Durchlaufen ermittelt. Aus dem
+Durchschnitt der Laufzeiten für ein festes $N$ wurde mit der schnellsten execution-configuration
+der Speedup berechnet. Die Ergebnisse sind in Abb. 1 dargestellt. Mit steigender Gittergroesse
+steigt auch der Speedup, auch wenn dieser erst ab $N=512$ den Wert $1$ uebersteigt.\\
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{../figures/speedup.pdf}
+  \caption{Bester durschnittlicher Speedup von verschiedenen execution-configurations}
+\end{figure}
+
+
+Es wird vermutet, dass die GPU-Implementierung nicht optimal ist, da bei der Benutzung von nvprof
+auffiel, dass ein Grossteil der Laufzeit durch die Ausführung von den Unroll-Funktionen bei der Berechnungen
+der Skalarprodukte verursacht wird. Um ein Skalarprodukt zu berechnen, wird unter anderem die Unroll-Funktion zweimal ausgefuehrt. Moeglicherweise
+waere es effizienter, nur eine Unroll-Funktion auszufuehren und dann das vergleichsweise kleine Array seriell auf dem Host zu berechnen.
+
+
 
 
 \section{Amdahlsches Gesetz}
