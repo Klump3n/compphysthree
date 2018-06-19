@@ -79,16 +79,16 @@ double p(int x, cuDoubleComplex phi_x, cuDoubleComplex h, double kappa, double l
 
 }
 
-double p_comp(cuDoubleComplex phi_one, cuDoubleComplex phi_two, int index, double lambda) {
-  double phi_norm_one = cuCabs(phi_one)*cuCabs(phi_one);
-  double phi_norm_two = cuCabs(phi_two)*cuCabs(phi_two);
+/* double p_comp(cuDoubleComplex phi_one, cuDoubleComplex phi_two, int index, double lambda) { */
+/*   double phi_norm_one = cuCabs(phi_one)*cuCabs(phi_one); */
+/*   double phi_norm_two = cuCabs(phi_two)*cuCabs(phi_two); */
 
-  cuDoubleComplex kappa_sum = make_cuDoubleComplex(0.0, 0.0);
-  for (int j=0; j<ndim; j++) {
-    kappa_sum = cuCadd(kappa_sum,
-                       cuCadd(phi_one[ nn[j][index] ], phi_one[ nn[ndim+j][index] ])
-                       );
-  };
-  cuDoubleComplex Bx = cuCadd(h, kappa_sum);
-  double asdf = 2 * (cuCreal());
-}
+/*   cuDoubleComplex kappa_sum = make_cuDoubleComplex(0.0, 0.0); */
+/*   for (int j=0; j<ndim; j++) { */
+/*     kappa_sum = cuCadd(kappa_sum, */
+/*                        cuCadd(phi_one[ nn[j][index] ], phi_one[ nn[ndim+j][index] ]) */
+/*                        ); */
+/*   }; */
+/*   cuDoubleComplex Bx = cuCadd(h, kappa_sum); */
+/*   double asdf = 2 * (cuCreal()); */
+/* } */

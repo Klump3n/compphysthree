@@ -90,15 +90,15 @@ void aufg_3() {
   for (int k=0; k<nvol; k++)
     {
       phi_one[k] = make_cuDoubleComplex(
-                                   (float)(rand() & 0xFF ) / 100.0,
-                                   (float)(rand() & 0xFF ) / 100.0
+                                   (float)(rand() & 0xFF ) / 100000.0,
+                                   (float)(rand() & 0xFF ) / 100000.0
                                    );
       phi_two[k] = phi_one[k];
     };
 
   phi_two[1] = make_cuDoubleComplex( /* Because. */
-                                                (float)(rand() & 0xFF ) / 100.0,
-                                                (float)(rand() & 0xFF ) / 100.0
+                                    (float)(rand() & 0xFF ) / 100000.0,
+                                    (float)(rand() & 0xFF ) / 100000.0
                                                 );
 
   cuDoubleComplex h = make_cuDoubleComplex(1.0, 1.0);
