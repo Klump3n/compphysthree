@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include "global.h"
 /*
    ueber global.h werden folgende globale Variablen eingebunden: 
@@ -21,7 +22,7 @@ void geom_pbc(){
       nn[0][i] ist reserviert.
   */
   int   i, k;
-  int *ibase, *ix; 
+  int *ibase, *ix;
 
   ibase = (int *) malloc((ndim+2) * sizeof(int));
   ix = (int *) malloc((ndim+1) * sizeof(int));

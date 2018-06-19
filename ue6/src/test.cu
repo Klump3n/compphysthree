@@ -1,29 +1,39 @@
 
 #define DEFINE_GLOBAL
 
-#include <math.h>
+/* #include <math.h> */
 #include <stdio.h>
 #include <stdlib.h>
-#include <cuComplex.h>
+/* #include <cuComplex.h> */
 #include "global.h"
+/* #include <assert.h> */
 
-int main(void)
-{
-   int k;
-   double r;
-   cuDoubleComplex z = make_cuDoubleComplex(1.5,2.0);
+#include "cases.h"
 
-   printf("  z    = %f + %f * i\n", cuCreal(z), cuCimag(z));
-   r=cuCabs(z);
-   printf(" |z|^2 = %.6f\n", r*r);
-   z=cuCmul(z,cuConj(z));
-   printf("  zz^* = %.6f + %.6f\n",  cuCreal(z), cuCimag(z));
+int main(void) {
 
-   phi=(cuDoubleComplex*)malloc(10*sizeof(cuDoubleComplex));
+  /* int k; */
+  /* double r; */
+  /* cuDoubleComplex z = make_cuDoubleComplex(1.5,2.0); */
 
-   for (k=0; k<10; k++)
-   {
-      phi[k]=make_cuDoubleComplex((double)k,(double)(k*k));
-      printf("%f + %f * i\n", cuCreal(phi[k]), cuCimag(phi[k]));
-   }
+  /* printf("  z    = %f + %f * i\n", cuCreal(z), cuCimag(z)); */
+  /* r=cuCabs(z); */
+  /* printf(" |z|^2 = %.6f\n", r*r); */
+  /* z=cuCmul(z,cuConj(z)); */
+  /* printf("  zz^* = %.6f + %.6f\n",  cuCreal(z), cuCimag(z)); */
+
+  /* phi=(cuDoubleComplex*)malloc(10*sizeof(cuDoubleComplex)); */
+
+  /* for (k=0; k<10; k++) */
+  /* { */
+  /*    phi[k]=make_cuDoubleComplex((double)k,(double)(k*k)); */
+  /*    printf("%f + %f * i\n", cuCreal(phi[k]), cuCimag(phi[k])); */
+  /* } */
+
+  prepare_run();
+  aufg_1();
+  aufg_2();
+  aufg_3();
+
+  return 0;
 }
