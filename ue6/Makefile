@@ -1,6 +1,6 @@
 SHELL:=/bin/bash
 
-BIN=monte_carlo
+BIN=monte_carlo_test
 
 all:
 	module load cuda; \

@@ -9,3 +9,4 @@ ue*/tex/*.synctex.gz
 ue*/tex/*.toc
 ue*/*/bin/*
 ue*/bin/*
+!ue*/bin/.gitkeep
