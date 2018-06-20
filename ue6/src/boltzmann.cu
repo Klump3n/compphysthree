@@ -30,14 +30,14 @@ double S(cuDoubleComplex *phi, cuDoubleComplex h, double kappa, double lambda) {
     {
 
       kappa_sum = 0.0;
-      /* mmmmmh spaghetticode */
-      for (int j=0; j<ndim; j++) {
+
+      for (int j=1; j<(ndim+1); j++) {
         kappa_sum += 2 * (cuCreal(phi[i]) * cuCreal(phi[ nn[j][i] ]) +
                           cuCimag(phi[i]) * cuCimag(phi[ nn[j][i] ]));
       }
 
       phi_norm = cuCabs(phi[i])*cuCabs(phi[i]);
-      
+
       S_val +=
         phi_norm +
         lambda * (phi_norm - 1) * (phi_norm - 1) -
@@ -58,37 +58,25 @@ double S_analytical(cuDoubleComplex z, cuDoubleComplex h, double kappa, double l
                  );
 }
 
-double p(int x, cuDoubleComplex phi_x, cuDoubleComplex h, double kappa, double lambda) {
+double p_arg(int x, cuDoubleComplex *phi, cuDoubleComplex h, double kappa, double lambda) {
 
-  /* cuDoubleComplex phi_x = phi[x]; */
+  cuDoubleComplex phi_x = phi[x];
+
   double phi_norm = cuCabs(phi_x)*cuCabs(phi_x);
   cuDoubleComplex kappa_sum = make_cuDoubleComplex(0.0, 0.0);
 
-  for (int j=0; j<ndim; j++) {
+  for (int j=1; j<(ndim + 1); j++) {
     kappa_sum = cuCadd(kappa_sum,
                        cuCadd(phi[ nn[j][x] ], phi[ nn[ndim+j][x] ])
                        );
   };
+  kappa_sum = cuCmul(make_cuDoubleComplex(kappa, 0.0), kappa_sum);
   cuDoubleComplex Bx = cuCadd(h, kappa_sum);
 
-  return
-    /* exp( */
-        2 * (cuCreal(Bx) * cuCreal(phi_x) + cuCimag(Bx) * cuCimag(phi_x)) -
-        phi_norm - lambda * (phi_norm - 1) * (phi_norm - 1)
-        /* ) */;
-
+  return 2 * (cuCreal(Bx) * cuCreal(phi_x) + cuCimag(Bx) * cuCimag(phi_x)) -
+    phi_norm - lambda * (phi_norm - 1) * (phi_norm - 1);
 }
 
-/* double p_comp(cuDoubleComplex phi_one, cuDoubleComplex phi_two, int index, double lambda) { */
-/*   double phi_norm_one = cuCabs(phi_one)*cuCabs(phi_one); */
-/*   double phi_norm_two = cuCabs(phi_two)*cuCabs(phi_two); */
-
-/*   cuDoubleComplex kappa_sum = make_cuDoubleComplex(0.0, 0.0); */
-/*   for (int j=0; j<ndim; j++) { */
-/*     kappa_sum = cuCadd(kappa_sum, */
-/*                        cuCadd(phi_one[ nn[j][index] ], phi_one[ nn[ndim+j][index] ]) */
-/*                        ); */
-/*   }; */
-/*   cuDoubleComplex Bx = cuCadd(h, kappa_sum); */
-/*   double asdf = 2 * (cuCreal()); */
-/* } */
+double p(int x, cuDoubleComplex *phi, cuDoubleComplex h, double kappa, double lambda) {
+  return exp(p_arg(x, phi, h, kappa, lambda));
+}

@@ -3,6 +3,7 @@
 
 double S(cuDoubleComplex *phi, cuDoubleComplex h, double kappa, double lambda);
 double S_analytical(cuDoubleComplex z, cuDoubleComplex h, double kappa, double lambda);
-double p(int x, cuDoubleComplex phi_x, cuDoubleComplex h, double kappa, double lambda);
+double p(int x, cuDoubleComplex *phi, cuDoubleComplex h, double kappa, double lambda);
+double p_arg(int x, cuDoubleComplex *phi, cuDoubleComplex h, double kappa, double lambda);
 
 #endif
