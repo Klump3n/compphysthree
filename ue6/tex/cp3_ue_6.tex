@@ -150,7 +150,29 @@
 
 \section{Spin-Modell}
 
+\subsection{Über das Programm}
 
+Der Programmcode liegt im Verzeichnis \texttt{src}, dort wurden zwei Dateien
+erstellt. In der Datei \texttt{boltzmann.\{cu,h\}} sind die Programmfunktionen
+implementiert, in der Datei \texttt{cases.\{cu,h\}} sind die
+Testfälle/Aufgabenstellungen implementiert.
+
+Das Programm wird mit Hilfe des Makefiles kompiliert und kann dann durch Aufruf
+der Datei im Verzeichnis \texttt{bin} aufgerufen werden.
+Die Aufgaben 1 bis 3 werden dann ausgeführt. Jedes Ergebnis wird durch ein
+\texttt{assert()} getestet. Als Genauigkeitsgrenze wird konservativ
+$N_{\text{Vol}}*\varepsilon$ gesetzt.
+
+\subsection{Aufgabe 1}
+
+Wir wählen als Dimension $N_{\text{Dim}} = 3$ und setzen für jede Dimension $5$
+Gitterpunkte, erhalten also $N_{\text{Vol}} = 125$. Dies wird gemacht um die
+Routinen zügig zu prüfen.
+
+In einer Schleife über fünf Elemente setzen wir jeweils $z$, $h$, $\lambda$ und
+$\kappa$ auf zufällige Werte. Anschließend wird die Wirkung $S\left[ \phi, h
+\right]$ berechnet und mit dem analytischen Wert $S_{\text{Analytisch}}$
+verglichen.
 
 
 
