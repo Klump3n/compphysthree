@@ -276,8 +276,7 @@ abs((div_p1_by_p2 - P_div_S1_by_S2) / div_p1_by_p2) = 2.644175e-15
 \subsection{Wahrscheinlichkeitsverteilung}
 Jede Konfiguration der Markov-Kette $\Phi^{(1)}\to \Phi^{(2)}\to\dots\to \Phi^{(N)}$
 folgt der angestrebten Wahrscheinlichkeitsverteilung, unter der Vorraussetzung,
-dass $P[\Phi^{(1)}]$ der Wahrscheinlichkeitsverteilung folgt, denn \\
-
+dass $P[\Phi^{(1)}]$ der Wahrscheinlichkeitsverteilung folgt, denn
  \begin{align*}
 	\int \prod_{k\neq n} D\Phi^{(k)} {\cal P}[\Phi^{(1)},...,\Phi^{(N)}] = \int \prod_{k\neq n} D\Phi^{(k)}P[\Phi^{(1)}] W[\Phi^{(1)}\to \Phi^{(2)}]...W[\Phi^{(N-1)}\to \Phi^{(N)}]= \\
 	=\int \prod_{k <  n} D\Phi^{(k)}P[\Phi^{(1)}] W[\Phi^{(1)}\to \Phi^{(2)}]...W[\Phi^{(n-1)}\to \Phi^{(n)}] \int \prod_{k > n} D\Phi^{(k)} W[\Phi^{(n)}\to \Phi^{(n+1)}]...W[\Phi^{(N-1)}\to \Phi^{(N)}].
@@ -330,6 +329,14 @@ Für den Fall $\Phi \neq \Phi'$ und ohne Beschränkung der Allgemeinheit $P[\Phi
 
 Auch in diesem Fall ist wegen der Symmetrie der Vorschlagswahrscheinlichkeit das detaillierte Gleichgewicht erfüllt.
 
+\subsection{Gleichgewicht}
+
+Wenn $W_1$ und $W_2$ im Gleichgewicht mit $P$ sind, dann ist auch\\
+ $W[\Phi\to \Phi']=\int D\Phi'' W_1[\Phi\to \Phi''] W_2[\Phi''\to\Phi']$
+im Gleichgewicht mit $P$, denn
+\begin{align*}
+\int D\Phi'P[\Phi] W[\Phi\to \Phi'] = \int D\Phi D\Phi'' P[\Phi] W_1[\Phi\to \Phi''] W_2[\Phi''\to\Phi'] = \int D\Phi'' P[\Phi''] W_2[\Phi''\to\Phi'] = P[\Phi'].
+\end{align*}
 
 
 
