@@ -174,7 +174,101 @@ $\kappa$ auf zufällige Werte. Anschließend wird die Wirkung $S\left[ \phi, h
 \right]$ berechnet und mit dem analytischen Wert $S_{\text{Analytisch}}$
 verglichen.
 
+Die analytische Funktion lässt sich wie folgt darstellen:
+\begin{align*}
+  S(z, h, \lambda, \kappa)
+  &=
+    \sum_{x} \left[ |z|^{2} + \lambda \left( |z|^{2} - 1 \right)^{2} -
+    \kappa \sum_{1}^{d} \left( z^{*}z + z z^{*}\right) -
+    \left( h^{*}z + h z^{*} \right) \right]\\
+  &=
+    \sum_{x} \left[ |z|^{2} + \lambda \left( |z|^{2} - 1 \right)^{2} -
+    2 \kappa d |z|^{2} -
+    \left( h^{*}z + h z^{*} \right) \right]\\
+  &=
+    N_{\text{Vol}} \left[ |z|^{2} + \lambda \left( |z|^{2} - 1 \right)^{2} -
+    2 \kappa d |z|^{2} -
+    \left( h^{*}z + h z^{*} \right) \right]\,.
+\end{align*}
 
+Übereinstimmung der analyischen und der Monte-Carlo Funktion ist ausgezeichnet:
+\begin{verbatim}
+wirkung monte carlo 0.318527
+wirkung analytisch 0.318527
+assert:
+abs((S_MC - S_ANA) / S_ANA) = 3.485493e-16
+
+wirkung monte carlo 0.213218
+wirkung analytisch 0.213218
+assert:
+abs((S_MC - S_ANA) / S_ANA) = 5.206982e-16
+
+wirkung monte carlo 0.242190
+wirkung analytisch 0.242190
+assert:
+abs((S_MC - S_ANA) / S_ANA) = 3.323475e-15
+
+wirkung monte carlo 0.175598
+wirkung analytisch 0.175598
+assert:
+abs((S_MC - S_ANA) / S_ANA) = 1.580635e-15
+
+wirkung monte carlo 0.198665
+wirkung analytisch 0.198665
+assert:
+abs((S_MC - S_ANA) / S_ANA) = 1.955945e-15
+\end{verbatim}
+Die relative Abweichung liegt jeweils in einer Größenordnung von \num{1e-15} bis \num{1e-16}.
+
+\subsection{Aufgabe 2}
+
+Wir modifizieren einen zufälligen $\phi$-Vektor mit einer zufälligen Phase
+$\alpha$,
+\begin{align*}
+  \phi' = \left( \cos\left( \alpha \right) + \mathrm{i}\sin\left( \alpha \right) \right) \phi\,.
+\end{align*}
+Wir berechnen die Wirkung mit $\phi$ und $\phi'$. Die Abweichung hier ist
+nicht von \num{0} verschieden.
+\begin{verbatim}
+originale wirkung 0.286771
+modifizierte wirkung 0.286771
+
+assert:
+abs((S_mc_orig - S_mc_mod) / S_mc_orig) = 0.000000e+00
+\end{verbatim}
+Eine komplexe Phase hat also keinen Einfluss auf die Wirkung.
+
+\subsection{Aufgabe 3}
+
+Es wird die Richtigkeit der Gleichung
+\begin{align*}
+  \frac{P\left[ \phi' \right]}{P\left[ \phi \right]} = \frac{p\left( \phi'_{x} \right)}{p\left( \phi_{x} \right)}
+\end{align*}
+überprüft, wobei
+\begin{align*}
+  P\left[ \phi \right] = \exp\left( - S\left[ \phi, h \right] \right)\,.
+\end{align*}
+Da Ergebnisse von E-Funktionen mitunter sehr groß werden können und es dann
+schwierig ist, diese numerisch ordentlich zu behandeln, berechnen wir zunächst
+die Argumente der E-Funktionen und bilden den Quotienten durch Subtraktion der
+Argumente in einer E-Funktion. Diese Methode ist als \emph{alternativ}
+gekennzeichnet. Als Vergleich berechnen wir den Quotienten auch direkt. Auch
+hier ist die Übereinstimmung hervorragend.
+\begin{verbatim}
+p(1) 0.371438
+p(2) 0.368600
+P(1) 0.000000
+P(2) 0.000000
+S(1) 124.313789
+S(2) 124.321459
+p(1)/p(2) 1.007700
+P(1)/P(2) 1.007700
+p(1)/p(2) alternativ 1.007700
+P(1)/P(2) alternativ 1.007700
+
+assert:
+abs((div_p1_by_p2 - P_div_S1_by_S2) / div_p1_by_p2) = 2.644175e-15
+\end{verbatim}
 
 
 \section{Markov-Kette}
