@@ -301,30 +301,30 @@ Zusammen mit dem Gleichgewicht $\int D\Phi P[\Phi] W[\Phi\to \Phi'] = P[\Phi']$ 
 Die Metropolis-Übergangswahrscheinlichkeit ist definiert als
 
 \begin{align*}
-	w_m(\Phi\to\Phi') = w_v(\Phi\to\Phi') \min \left(1,\frac{P[\Phi']}{P[\Phi]}\right) + [1-A(\Phi)]\delta(\Phi,\Phi')
+	w_m(\Phi_x\to\Phi'_x) = w_v(\Phi_x\to\Phi'_x) \min \left(1,\frac{p(\Phi'_x)}{p(\Phi_x)}\right) + [1-A(\Phi_x)]\delta(\Phi_x,\Phi'_x)
 \end{align*}
 
-Die Vorschlagswahrscheinlichkeit soll symmetrisch sein, daher $w_v(\Phi\to\Phi')=w_v(\Phi'\to\Phi)$.
+Die Vorschlagswahrscheinlichkeit soll symmetrisch sein, daher $w_v(\Phi_x\to\Phi_x')=w_v(\Phi_x'\to\Phi_x)$.
 
 Damit das detaillierte Gleichgewicht erfüllt ist, muss gelten
 
 \begin{align}\label{eq:gg}
-P[\Phi] w_m(\Phi\to\Phi')= P[\Phi']w_m(\Phi'\to\Phi).
+p(\Phi_x) w_m(\Phi_x\to\Phi'_x)= p(\Phi'_x)w_m(\Phi'_x\to\Phi_x).
 \end{align}
 
-Für den Fall $\Phi = \Phi'$ wird Gleichung \ref{eq:gg} zu
+Für den Fall $\Phi_x = \Phi'_x$ wird Gleichung \ref{eq:gg} zu
 
 \begin{align*}
-	P[\Phi] w_v(\Phi\to\Phi) + [1-A(\Phi)] = P[\Phi] w_v(\Phi\to\Phi) + [1-A(\Phi)]
+	p(\Phi_x) w_v(\Phi_x\to\Phi_x) + [1-A(\Phi_x)] = p(\Phi_x) w_v(\Phi_x\to\Phi_x) + [1-A(\Phi_x)]
 \end{align*}
 
 und das detaillierte Gleichgewicht ist erfüllt.
 
-Für den Fall $\Phi \neq \Phi'$ und ohne Beschränkung der Allgemeinheit $P[\Phi']>P[\Phi]$ wird Gleichung \ref{eq:gg} zu
+Für den Fall $\Phi_x \neq \Phi_x'$ und ohne Beschränkung der Allgemeinheit $p(\Phi'_x)>p(\Phi_x)$ wird Gleichung \ref{eq:gg} zu
 
 \begin{align*}
-		P[\Phi] w_v(\Phi\to\Phi') \frac{P[\Phi']}{P[\Phi]} = P[\Phi'] w_v(\Phi'\to\Phi)
-		\Leftrightarrow w_v(\Phi\to\Phi')=w_v(\Phi'\to\Phi)
+		p(\Phi_x) w_v(\Phi_x\to\Phi'_x) \frac{p(\Phi'_x)}{p(\Phi_x)} = p(\Phi_x') w_v(\Phi_x'\to\Phi_x)
+		\Leftrightarrow w_v(\Phi_x\to\Phi_x')=w_v(\Phi_x'\to\Phi_x)
 \end{align*}
 
 Auch in diesem Fall ist wegen der Symmetrie der Vorschlagswahrscheinlichkeit das detaillierte Gleichgewicht erfüllt.
