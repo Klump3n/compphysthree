@@ -8,6 +8,9 @@
 #include "geom_pbc.h"
 #include "randgpu.h"
 
+#include "tests.h"
+
+
 void print_nn(int k)
 {
    int i,j,idx;
@@ -248,6 +251,12 @@ int main(int argc, char **argv)
    {
       printf(" %.6f\n",rnd[i]);
    }
+
+
+
+   mag_test();
+   other_test();
+
 
    free(lsize);
    free(nn[0]);
