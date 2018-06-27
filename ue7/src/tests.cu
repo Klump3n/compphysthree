@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include "global.h"
 #include <assert.h>
+#include "randgpu.h"
 
 #include "eigener_code.h"
 
@@ -26,18 +27,52 @@ int mag_test() {
   return 0;
 }
 
+int update_test() {
+  /* generate random numbers */
+  return 0;
+}
+
 int other_test() {
-  int i;
+
+  cuDoubleComplex h=make_cuDoubleComplex(0.3,0.5);
+  double lambda=0.7;
+  double kappa=0.06;
+  double delta = 1e-1;
+
+  double *random_nums;
+  random_nums = (double *) malloc(2*sizeof(double));
+  random_nums = randgpu(2);
+  double rand1 = random_nums[0],
+    rand2 = random_nums[1];
+
   int idx = 0;
-  double delta = 1e-3;
-  double rand1;
-  double rand2;
-  for (i=0;i<10;i++){
-    rand1 = (double) (rand() / 30000000000.0);
-    rand2 = (double) (rand() / 30000000000.0);
-    double bla = akzeptanz(idx, delta, rand1, rand2);
-    printf("%e, %e, %f\n", rand1, rand2, bla);
-  }
+
+  double p_a_val = p_a(idx, delta, lambda, kappa, h, rand1, rand2);
+  printf("%e, %e, %f\n", rand1, rand2, p_a_val);
 
   return 0;
+}
+
+int delta_fitting_test() {
+  cuDoubleComplex h=make_cuDoubleComplex(0.3,0.5);
+  double lambda=0.7;
+  double kappa=0.06;
+  double delta = 1e-5;
+
+  double delta_result = delta_fitting(delta, lambda, kappa, h);
+  printf("delta result = %f\n", delta_result);
+
+  return 0;
+}
+
+int spin_set_test() {
+  cuDoubleComplex h=make_cuDoubleComplex(0.3,0.5);
+  double lambda=0.7;
+  double kappa=0.06;
+  double delta = 1e-5;
+
+  spin_update(delta, lambda, kappa, h);
+
+  return 0;
+
 }
