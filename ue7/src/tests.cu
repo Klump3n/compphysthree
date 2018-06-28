@@ -6,6 +6,8 @@
 #include "randgpu.h"
 
 #include "eigener_code.h"
+#include "action.h"
+
 
 
 int mag_test() {
@@ -32,6 +34,48 @@ int update_test() {
   return 0;
 }
 
+int spin_update_test() {
+	
+  cuDoubleComplex *phi_backup;
+  phi_backup = (cuDoubleComplex *) malloc(nvol*sizeof(cuDoubleComplex));
+  memcpy(phi_backup, phi, nvol*sizeof(cuDoubleComplex));
+  cuDoubleComplex z = make_cuDoubleComplex(0.0, 0.0);
+  int idx;
+
+  phi[0]=make_cuDoubleComplex(0.0, 0.0);
+  for (idx=1; idx<nvol; idx++){
+    phi[idx] = z;
+  }
+   
+  cuDoubleComplex h=make_cuDoubleComplex(0.0,0.0);
+  double lambda=0.0;
+  double kappa=0.06;
+  double delta = 1e-2;
+
+  double rand1=0.8;
+  double rand2=0.8;
+
+  double phi_abs = rand1*rand1 +rand2*rand2;
+  double p_analytic = exp(-phi_abs - lambda*(phi_abs-1)*(phi_abs-1)+lambda);
+  double rand3 = p_analytic;
+  printf("p_analytic: %f\n",rand3);
+bool res1 =  spin_update_one_point(
+                              0, delta,
+                             lambda, kappa, h,
+                             rand1, rand2, rand3+0.01
+                             );
+
+bool res2 =  spin_update_one_point(
+                              0, delta,
+                             lambda, kappa, h,
+                             rand1, rand2, rand3-0.01
+                             );
+
+  printf("res+:%d (=1?), res-:%d (=0?)\n",res1,res2);
+  memcpy(phi, phi_backup, nvol*sizeof(cuDoubleComplex));
+  return 0;
+}
+
 int other_test() {
 
   cuDoubleComplex h=make_cuDoubleComplex(0.3,0.5);
@@ -52,7 +96,7 @@ int other_test() {
 
   return 0;
 }
-
+/*
 int delta_fitting_test() {
   cuDoubleComplex h=make_cuDoubleComplex(0.3,0.5);
   double lambda=0.7;
@@ -64,7 +108,7 @@ int delta_fitting_test() {
 
   return 0;
 }
-
+*/
 int spin_set_test() {
   cuDoubleComplex h=make_cuDoubleComplex(0.3,0.5);
   double lambda=0.7;
@@ -74,5 +118,43 @@ int spin_set_test() {
   spin_update(delta, lambda, kappa, h);
 
   return 0;
+
+
+
+}
+
+int boltzmag() {
+	
+  cuDoubleComplex h=make_cuDoubleComplex(0.5,0.0);
+  double lambda=1.0;
+  double kappa=0.1;
+  double delta = 1e-5;
+  random_cnfg();
+
+  boltzmann_exp(delta, lambda, kappa, h);
+  printf("\n--------------------------------\n");
+  random_cnfg();
+  h=make_cuDoubleComplex(0.0,0.0);
+  boltzmann_exp(delta, lambda, kappa, h);
+
+  printf("\n--------------------------------\n");
+
+  h=make_cuDoubleComplex(0.5,0.0);
+
+  cuDoubleComplex z=make_cuDoubleComplex(0.5, 0.0);
+  for (int idx=0; idx<nvol; idx++){
+    phi[idx] = z;
+  }
+  
+  boltzmann_exp(delta, lambda, kappa, h);
+
+  printf("\n--------------------------------\n");
+  for (int idx=0; idx<nvol; idx++){
+    phi[idx] = z;
+  }
+  h=make_cuDoubleComplex(0.0,0.0);
+  boltzmann_exp(delta, lambda, kappa, h);
+  return 0;
+
 
 }

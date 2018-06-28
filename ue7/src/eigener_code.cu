@@ -58,13 +58,12 @@ void spin_update(double delta, double lambda, double kappa, cuDoubleComplex h) {
 
         /* every point ten times */
         for (jdx=0; jdx<10; jdx++) {
-          printf("AM I CORRECT?\n");
           rand1 = random_nums[3*10*idx + 3*jdx + 0]; /* I GUESS... */
           rand2 = random_nums[3*10*idx + 3*jdx + 1];
           rand3 = random_nums[3*10*idx + 3*jdx + 2];
 
           spin_updated = spin_update_one_point(
-                                               idx, delta,
+						       idx, delta,
                                                lambda, kappa, h,
                                                rand1, rand2, rand3
                                                );
@@ -102,81 +101,7 @@ void spin_update(double delta, double lambda, double kappa, cuDoubleComplex h) {
 }
 
 
-double delta_fitting(double delta, double lambda, double kappa, cuDoubleComplex h)
-{
 
-  printf("DAS IST NICHT NACH AUFGABENSTELLUNG\n");
-
-  /* how many runs to do */
-  int fit_count = 10;
-  fit_count = (fit_count >= nvol) ? nvol : fit_count;
-  /* printf("doing %d runs\n", fit_count); */
-
-  /* printf("\nStarting delta fitting\n"); */
-
-  int idx;
-
-  double *random_nums;
-  /* 2 for the random vector, 1 for comparison to accept */
-  random_nums = (double *) malloc(3*fit_count*sizeof(double));
-
-  double rand1, rand2, rand3;
-  bool spin_updated = false;
-
-  int count_success = 0;
-  double accept_percentage = 0.0;
-
-  double *rnd;
-
-  while ((accept_percentage < 0.35) || (accept_percentage > 0.45))
-    {
-      /* printf("Delta fitting with delta = %f\t", delta); */
-
-      rnd = randgpu(3*fit_count);
-      memcpy(random_nums, rnd, 3*fit_count*sizeof(double));
-
-      count_success = 0;
-      accept_percentage = 0.0;
-
-      for (idx=0; idx<fit_count; idx++) {
-        rand1 = random_nums[3*idx + 0];
-        rand2 = random_nums[3*idx + 1];
-        rand3 = random_nums[3*idx + 2];
-
-        spin_updated = spin_update_one_point(
-                                             idx, delta,
-                                             lambda, kappa, h,
-                                             rand1, rand2, rand3
-                                             );
-
-        if (spin_updated) {
-          count_success++;
-        }
-
-        /* reset */
-        spin_updated = false;
-
-      }
-
-      accept_percentage = ((double) count_success / (double) fit_count);
-
-      /* printf("Accepted = %f\n", accept_percentage); */
-
-      if (accept_percentage < 0.35) {
-        delta = 1.05*delta;
-      }
-      else if (accept_percentage > 0.45) {
-        delta = 0.95*delta;
-      }
-      else {
-        break;
-      }
-    }
-
-  free(random_nums);
-  return delta;
-
-}
 
 /*
  * return a new local phi
@@ -225,7 +150,7 @@ bool spin_update_one_point(
                            )
 {
 
-  printf("TEST SCHREIBEN FUER SPIN UPDATE\n");
+	//  printf("TEST SCHREIBEN FUER SPIN UPDATE\n");
 
   /* calculate p_a for the index and the proposed random numbers */
   double p_a_val = p_a(idx, delta, lambda, kappa, h, rand1, rand2);
@@ -243,4 +168,85 @@ bool spin_update_one_point(
   } else {
     return false;
   }
+}
+
+void boltzmann_exp(double delta, double lambda, double kappa, cuDoubleComplex h) {
+  int idx, jdx;
+
+  int i = 0,
+    max_tries = 1000;
+
+  double *random_nums;
+  /* 2 for the random vector, 1 for comparison to accept */
+  /* also 10 for every sweep and nvol for every datapoint */
+  random_nums = (double *) malloc(3*10*nvol*sizeof(double));
+
+  double rand1, rand2, rand3;
+  bool spin_updated = false;
+
+  int count_success = 0;
+  double accept_percentage = 0.0;
+
+  double *rnd;
+  double boltz_exp;
+  cuDoubleComplex mag_val;  
+
+  while (((accept_percentage < 0.35) || (accept_percentage > 0.45)) && i<max_tries)
+    {
+
+      i++;
+      rnd = randgpu(3*10*nvol);
+      memcpy(random_nums, rnd, 3*10*nvol*sizeof(double));
+
+      count_success = 0;
+      accept_percentage = 0.0;
+
+      
+      boltz_exp = action(lambda, kappa, h);
+      mag_val = mag(phi);
+   
+      printf("%f, %f, \n",boltz_exp, cuCabs(mag_val));
+      /* sweep */
+      for (idx=0; idx<nvol; idx++) {
+
+        /* every point ten times */
+        for (jdx=0; jdx<10; jdx++) {
+          rand1 = random_nums[3*10*idx + 3*jdx + 0]; /* I GUESS... */
+          rand2 = random_nums[3*10*idx + 3*jdx + 1];
+          rand3 = random_nums[3*10*idx + 3*jdx + 2];
+
+          spin_updated = spin_update_one_point(
+						       idx, delta,
+                                               lambda, kappa, h,
+                                               rand1, rand2, rand3
+                                               );
+
+          if (spin_updated) {
+            count_success++;
+          }
+
+          /* reset */
+          spin_updated = false;
+
+        }
+
+      }
+
+
+      accept_percentage = ((double) count_success / (double) (10*nvol));
+
+
+      if (accept_percentage < 0.35) {
+        delta = 1.05*delta;
+      }
+      else if (accept_percentage > 0.45) {
+        delta = 0.95*delta;
+      }
+      else {
+        break;
+      }
+    }
+
+  free(random_nums);
+
 }

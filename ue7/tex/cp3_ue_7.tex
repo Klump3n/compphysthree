@@ -157,12 +157,15 @@ Vergleich der Exponenten von $p(\phi_{\text{x}})$.
 \end{align*}
 
 \subsection{Frage 2}
-Es werden zwei Zufallszahlen f\"ur einen Vorschlag ben\"otigt. Die
-Akzeptanz wird mit diesen Zufallszahlen und den bereits bekannten Zahlen
-bestimmt.
+Es werden drei Zufallszahlen f\"ur einen Vorschlag ben\"otigt. Zwei der Zufallszahlen werden im Intervall
+$[-\delta,\delta]$ benoetigt um einen neuen Spinwert vorzuschlagen. Der neue wird mit diesen  zwei Zufallszahlen und den bereits bekannten Zahlen bestimmt.
 \begin{align*}
-  \phi_{\text{x'}} = r_{\text{r}} + \mathrm{i} r_{\text{i}}
-  \qquad \text{mit} \qquad r_{\text{r}}\,, r_{\text{i}} \in \text{\texttt{rand}}(0, 1]\,.
+  \phi_{\text{x'}} = \phi_{\text{x}} +  r_{\text{r}} + \mathrm{i} r_{\text{i}}
+  \qquad \text{mit} \qquad r_{\text{r}}\,, r_{\text{i}} \in \text{\texttt{rand}}[-\delta, \delta]\,.
 \end{align*}
+
+Daraus wird dann $p_{\text{Akzeptiert}}$ bestimmt.
+
+Die dritte Zufallszahl im Intervall $[0,1]$ wird fuer die Entscheidung benoetigt, ob der neue Vorschlag akzeptiert wird oder nicht. Ist die dritte Zufallszahl kleiner als die Akzeptanz, so wird der Spin nicht geupdated, ist die Zufallszahl groesser als $p_{\text{Akzeptiert}}$, so wird der Spin geupdated.
 
 \end{document}

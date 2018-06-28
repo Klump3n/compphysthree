@@ -251,10 +251,12 @@ int main(int argc, char **argv)
       printf(" %.6f\n",rnd[i]);
    }
 
-   mag_test();
+//   mag_test();
    /* other_test(); */
    /* int fitting_res = delta_fitting_test(); */
-   int set_res = spin_set_test();
+//   int set_res = spin_set_test();
+//   spin_update_test();
+  boltzmag();
 
    free(lsize);
    free(nn[0]);
