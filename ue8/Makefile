@@ -1,10 +1,10 @@
 SHELL:=/bin/bash
 
-BIN=nice_binary
+BIN=mc_mag
 
 all:
 	module load cuda; \
-	nvcc -lm -O3 -arch sm_30 -o bin/$(BIN) src/run.cu src/geom_pbc.cu src/randgpu.cu src/metropolis.cu src/spin.cu -Wno-deprecated-gpu-targets
+	nvcc -lm -O3 -arch sm_30 -o bin/$(BIN) src/run.cu src/geom_pbc.cu src/randgpu.cu src/metropolis.cu src/spin.cu src/stat5.c -Wno-deprecated-gpu-targets
 
 clean:
 	rm ./bin/$(BIN)

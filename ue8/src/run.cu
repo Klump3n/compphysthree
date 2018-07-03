@@ -4,12 +4,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include "stat5.h"
 #include "global.h"
 #include "randgpu.h"
 #include "geom_pbc.h"
 #include "metropolis.h"
 #include "spin.h"
 #include "common.h"
+
 
 #define MIN_NARG 6
 
@@ -103,13 +105,17 @@ int main(int argc, char **argv)
    init_phi(phi0);
    printf("%f sec.\n\n",seconds()-iStart);
 
+   bool thermalized = false;
+
    s=action();
+
    m=magnet();
    mm=cuCabs(m)*cuCabs(m);
 
    printf("UPD\t A       \t DELTA   \t S       \t RE(M)   \t IM(M)   \t |M|^2   \n");
    printf("%d\t %f\t %f\t %f\t %f\t %f\t %f\n",0,0.0,delta,s,cuCreal(m),cuCimag(m),mm);
 
+   clear5(1, 500);
    acc=0.0;
    iStart=seconds();
    for (i=1; i<=nsweep; i++)
@@ -117,9 +123,15 @@ int main(int argc, char **argv)
       acc=metro_sweep(delta);
       delta=tune_delta(acc,delta);
       s=action();
+
       m=magnet();
       mm=cuCabs(m)*cuCabs(m);
+
       printf("%d\t %f\t %f\t %f\t %f\t %f\t %f\n",i,acc,delta,s,cuCreal(m),cuCimag(m),mm);
+
+      /* accum5(1, s); */
+      /* accum5(2, mm); */
+
    }
 
    printf("\n\n");
