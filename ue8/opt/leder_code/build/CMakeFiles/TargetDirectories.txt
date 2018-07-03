@@ -1,4 +1,0 @@
-/users/stud/plock/coding/cp3/compphysthree/ue8/opt/leder_code/build/CMakeFiles/rebuild_cache.dir
-/users/stud/plock/coding/cp3/compphysthree/ue8/opt/leder_code/build/CMakeFiles/edit_cache.dir
-/users/stud/plock/coding/cp3/compphysthree/ue8/opt/leder_code/build/CMakeFiles/run.dir
-/users/stud/plock/coding/cp3/compphysthree/ue8/opt/leder_code/build/CMakeFiles/check.dir

@@ -5,6 +5,8 @@ Get metrics.
 """
 import os
 from subprocess import check_output
+import matplotlib.pyplot as plt
+import scipy.optimize as so
 import re
 import numpy as np
 import time
@@ -21,14 +23,17 @@ kappa = .2333
 
 res = {}
 
+def func(kappa, factor, kappa_c):
+    return factor * np.sqrt(kappa - kappa_c)
+
+
 def ploti(thing):
-    import matplotlib.pyplot as plt
 
     plt.figure()
     plt.xlabel(r'$\kappa$')
     plt.ylabel(r'$|M|^2$')
 
-    for L in thing:
+    for index, L in enumerate([4, 8, 16]):
         Lvals = thing[L]
 
         x = []
@@ -38,17 +43,41 @@ def ploti(thing):
         for kappa in Lvals:
             y.append(Lvals[kappa]['mean'])
             y_err.append(Lvals[kappa]['std'])
-            x.append(float(kappa))
+            x.append(kappa)
 
-        plt.errorbar(x, y, yerr=y_err, label='{}'.format(L), capsize=1, fmt='+')
+        kappa = []
+        mean = []
+        std = []
+
+        for index, value in enumerate(y):
+
+            if (value > .1):
+                kappa.append(x[index])
+                mean.append(y[index])
+                std.append(y_err[index])
+
+        popt, pcov = so.curve_fit(func, kappa, mean, p0=[4., .2], sigma=std)
+
+        kappa_c = popt[1]
+        kappa_end = kappa[-1] + .1
+        kappa_linspace = np.linspace(kappa_c, kappa_end)
+
+        print('{}'.format(L))
+        print(r'pref = {} $\pm$ {}'.format(popt[0], np.sqrt(pcov[0,0])))
+        print(r'kappa_c = {} $\pm$ {}'.format(popt[1], np.sqrt(pcov[1,1])))
+
+        ebarlines, _, _ = plt.errorbar(x, y, yerr=y_err, label='L = {}'.format(L), capsize=2, ls='None', marker='_')
+        pcolor = ebarlines.get_color()
+        plt.plot(kappa_linspace, func(kappa_linspace, *popt), label=r'L = {}, '.format(L) + r'$\kappa_{c} = (' + '{:.4f}'.format(popt[1]) + r' \pm {:.4f})$'.format(np.sqrt(pcov[1,1])), color=pcolor, alpha=.65)
 
     plt.legend(loc='best')
+    plt.grid()
     plt.tight_layout()
-    plt.show()
+    plt.savefig('mag_over_kappa.pdf')
 
 
 for L in [4, 8, 16]:
-    res[str(L)] = {}
+    res[L] = {}
 
     for k in range(-10, 11):
         kappa = mean_k * (1 + delta_k * k)
@@ -61,9 +90,9 @@ for L in [4, 8, 16]:
 
         print(kappa, mean, std)
 
-        res[str(L)][str(kappa)] = {}
-        res[str(L)][str(kappa)]['mean'] = mean
-        res[str(L)][str(kappa)]['std'] = std
+        res[L][kappa] = {}
+        res[L][kappa]['mean'] = mean
+        res[L][kappa]['std'] = std
 
         time.sleep(1)
 
