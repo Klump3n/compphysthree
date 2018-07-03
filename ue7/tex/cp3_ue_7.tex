@@ -155,6 +155,8 @@ Vergleich der Exponenten von $p(\phi_{\text{x}})$.
 \begin{align*}
   p_{\text{Akzeptiert}} = \frac{p(\phi_{\text{x'}})}{p(\phi_{\text{x}})} \qquad \text{falls} \qquad \text{\texttt{alocal}}(\phi_{\text{x'}}) < \text{\texttt{alocal}}(\phi_{\text{x}})\,.
 \end{align*}
+Die Funktion ${\texttt{alocal}}$ berechnet hierbei die lokale Wirkung des Feldes.
+Für den Fall  dass die Bedingung für die lokale Wirkiung nicht erfüllt ist, wird die Akzeptanz auf $1$ gesetzt.
 
 \subsection{Frage 2}
 Es werden drei Zufallszahlen f\"ur einen Vorschlag ben\"otigt. Zwei der Zufallszahlen werden im Intervall
@@ -167,5 +169,45 @@ $[-\delta,\delta]$ benoetigt um einen neuen Spinwert vorzuschlagen. Der neue wir
 Daraus wird dann $p_{\text{Akzeptiert}}$ bestimmt.
 
 Die dritte Zufallszahl im Intervall $[0,1]$ wird fuer die Entscheidung benoetigt, ob der neue Vorschlag akzeptiert wird oder nicht. Ist die dritte Zufallszahl kleiner als die Akzeptanz, so wird der Spin nicht geupdated, ist die Zufallszahl groesser als $p_{\text{Akzeptiert}}$, so wird der Spin geupdated.
+
+\subsection{Check der Magnetisierungsfunktion in C}
+
+Für die Überprüfung der korrekten Implementierung der Magnetisierungsberechnung wurde überprüft, ob die Magnetisierung $M[\Phi]$ für die Konfiguration
+$\Phi_i = z, \forall i$ mit dem analytischen Ergebnis $M[\Phi]=z$ übereinstimmt. Dies ist bis zur Maschinengenauigkeit erfüllt.
+
+\subsection{Check der Spin-Update-Funktion in C}
+
+Um zu Überprüfen ob die Akzeptanzfunktion für einen neuen Spin-Vorschlag korrekt implementiert wurde, wurde für einen einfachen Fall in dem
+man $p_\text{Akzeptiert}$ analytisch berechnen kann die Übereinstimmung von Numerik und Analytik verglichen. Auch wenn man hier eine Übereinstimmung mit guter Genauigkeit fand, kam es beim Akzeptieren des neuen Spins mit Wahrscheinlichkeit $p_\text{Akzeptiert}$ zu Problemen, so dass die neue Feldkonfiguration nach einem sweep wohl nicht mehr der angestrebten Wahrscheinlichkeitsverteilung folgt.
+
+\section{Thermalisierung}
+
+Die geforderten Monte-Carlo-Simulation wurde durchgeführt, auch wenn es beim Spin-Update zu Problemen kam. Vermutlich ist durch dieses Problem keine Thermalisierung zu sehen.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{../figures/phi_rand_h_nil.pdf}
+  \caption{Blau: Boltzmann-Exponent, Gelb: Magnetisierung. Zufällige Startkonfiguration, kein äußeres Magnetfeld.}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{../figures/phi_pt5_h_nil.pdf}
+  \caption{Blau: Boltzmann-Exponent, Gelb: Magnetisierung. Phi konstant, $z=0.5$, kein äußeres Magnetfeld.}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{../figures/phi_rand_h_pt5.pdf}
+  \caption{Blau: Boltzmann-Exponent, Gelb: Magnetisierung. Zufällige Startkonfiguration, äußeres Magnetfeld $h=0.5$.}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{../figures/phi_pt5_h_pt5.pdf}
+  \caption{Blau: Boltzmann-Exponent, Gelb: Magnetisierung. Phi konstant, $z=0.5$, äußeres Magnetfeld $h=0.5$.}
+\end{figure}
+
+
 
 \end{document}
