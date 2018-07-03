@@ -7,11 +7,7 @@ import os
 from subprocess import check_output
 import re
 import numpy as np
-
-
-N = 128
-dimx = 256
-dimy = 1
+import time
 
 cwd = os.getcwd()
 
@@ -20,22 +16,58 @@ lamb = 1.0
 L = 4
 
 mean_k = .2333
-delta_k = .02
+delta_k = .1
 kappa = .2333
 
-result = check_output(['{}/../bin/mc_mag'.format(cwd) ,'{}'.format(lamb), '{}'.format(kappa), '{}'.format(h), '{}'.format(0.0), '{}'.format(1000), '{}'.format(L), '{}'.format(L), '{}'.format(L)])
+res = {}
 
-print(result)
-# for L in [4, 8, 16]:
-#     for k in range(-10, 11):
-#         # kappa = mean_k + delta_k * k
-#         kappa = mean_k * (1 + delta_k * k)
+def ploti(thing):
+    import matplotlib.pyplot as plt
+
+    plt.figure()
+    plt.xlabel(r'$\kappa$')
+    plt.ylabel(r'$|M|^2$')
+
+    for L in thing:
+        Lvals = thing[L]
+
+        x = []
+        y = []
+        y_err = []
+
+        for kappa in Lvals:
+            y.append(Lvals[kappa]['mean'])
+            y_err.append(Lvals[kappa]['std'])
+            x.append(float(kappa))
+
+        plt.errorbar(x, y, yerr=y_err, label='{}'.format(L), capsize=1, fmt='+')
+
+    plt.legend(loc='best')
+    plt.tight_layout()
+    plt.show()
 
 
-        # WAIT 1 SEC
+for L in [4, 8, 16]:
+    res[str(L)] = {}
 
+    for k in range(-10, 11):
+        kappa = mean_k * (1 + delta_k * k)
 
+        result = check_output(['{}/../bin/mc_mag'.format(cwd) ,'{}'.format(lamb), '{}'.format(kappa), '{}'.format(h), '{}'.format(0.0), '{}'.format(2000), '{}'.format(L), '{}'.format(L), '{}'.format(L)])
+        val = (re.search(r'1000\\t.*([0-9]+\.[0-9]+).*([0-9]+\.[0-9]+).*([0-9]+\.[0-9]+).*([0-9]+\.[0-9]+).*([0-9]+\.[0-9]+).*([0-9]+\.[0-9]+).*([0-9]+\.[0-9]+)', str(result)).groups(0))
 
+        mean = float(val[1])
+        std = float(val[2])
+
+        print(kappa, mean, std)
+
+        res[str(L)][str(kappa)] = {}
+        res[str(L)][str(kappa)]['mean'] = mean
+        res[str(L)][str(kappa)]['std'] = std
+
+        time.sleep(1)
+
+ploti(res)
 
 
 

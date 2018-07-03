@@ -1,10 +1,10 @@
 #define DEFINE_GLOBAL
 
+#include "stat5.h"
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "stat5.h"
 #include "global.h"
 #include "randgpu.h"
 #include "geom_pbc.h"
@@ -105,32 +105,69 @@ int main(int argc, char **argv)
    init_phi(phi0);
    printf("%f sec.\n\n",seconds()-iStart);
 
+   double *mm_array = (double *) malloc(nsweep*sizeof(double));
+   double *s_array = (double *) malloc(nsweep*sizeof(double));
+
    bool thermalized = false;
+   int thermCounter = 0;
+   double varByExpMM = 0.0;
+   int startIndex = 0;
+   int N = 0;
+   double factor_MM = 0.0,
+     factor_S = 0.0;
 
    s=action();
 
    m=magnet();
    mm=cuCabs(m)*cuCabs(m);
 
-   printf("UPD\t A       \t DELTA   \t S       \t RE(M)   \t IM(M)   \t |M|^2   \n");
-   printf("%d\t %f\t %f\t %f\t %f\t %f\t %f\n",0,0.0,delta,s,cuCreal(m),cuCimag(m),mm);
-
-   clear5(1, 500);
+   clear5(3, 2*nsweep);
    acc=0.0;
    iStart=seconds();
    for (i=1; i<=nsweep; i++)
    {
       acc=metro_sweep(delta);
-      delta=tune_delta(acc,delta);
+
+      if (!(thermalized))
+        {
+          delta=tune_delta(acc,delta);
+        }
+
       s=action();
 
       m=magnet();
       mm=cuCabs(m)*cuCabs(m);
 
-      printf("%d\t %f\t %f\t %f\t %f\t %f\t %f\n",i,acc,delta,s,cuCreal(m),cuCimag(m),mm);
+      accum5(1, s);
+      accum5(2, mm);
+      accum5(3, aver5(2));
 
-      /* accum5(1, s); */
-      /* accum5(2, mm); */
+      varByExpMM = var5(2)/aver5(2)/aver5(2);
+      if ((varByExpMM < .02) && i > 9)
+        {
+          thermCounter++;
+        }
+
+      /* when the varByExpMM was small 10 times */
+      if ((thermCounter > 9) && !(thermalized))
+        {
+          printf("Thermalization took %d steps\n", i);
+          printf("DELTA = %f\n", delta);
+          printf("UPD\t S     \t\t |M|^2  \t avg(|M|^2)  \t std(|M|^2) \t tau(|M|^2) \t tau(S) \t DEF \n");
+          thermalized = true;
+          startIndex = i;
+          i = 0;
+        }
+
+      if (thermalized)
+        {
+          N = i + startIndex;
+          factor_MM = 2 * tauint5(2) * var5(2) / N / var5(3);
+          /* mm_array[i] = mm; */
+          /* s_array[i] = s; */
+          /* printf("%d\t %f\t %f\t %f\t %f\t %f\t %f\t %f\t %f\t %f\t %f\n",i,acc,delta,s,cuCreal(m),cuCimag(m),mm, aver5(2), sigma5(2), tauint5(2), tauint5(1)); */
+          printf("%d\t %f\t %f\t %f\t %f\t %f\t %f\t %f\n",i,s,mm, aver5(2), sigma5(2), tau5(2), tau5(1), factor_MM);
+        }
 
    }
 
