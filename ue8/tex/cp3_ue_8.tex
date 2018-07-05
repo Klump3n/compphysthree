@@ -187,7 +187,17 @@ auf den Host kopiert werden. Hierzu werden folgende Kernel benoetigt
 
 
 \begin{description}
-\item [random_cnfg]  Erstellt zufaellige Spinstartkonfiguration
-
-
+\item [random\_cnfg]  Erstellt zufaellige Spinstartkonfiguration
+\item [set\_groups] Teilt alle Punkte des Gitters auf zwei Gruppen auf. Bei der Einteilung auf die Gruppen kommt es darauf an, dass
+		    ein Punkt nicht in einer Gruppe mit seinen naechsten Nachbarn liegt.
+		    Dies erfolgt in 2 Dimensionen nach einem Schachbrettmuster
+		    bzw. in $d$ Dimensionen nach dem Kriterium ob die Summe aller Koordinaten $x_i$ eines Punktes gerade oder ungerade ist.
+\item [randgpu] Erzeugt die benoetigten Zufallszahlen
+\item [alocal\_G1] Berechnet die lokale Wirkung der Punkte in einer Gruppe
+\item [spin\_update] Berechnet Akzeptanzwahrscheinlichkeit fuer jeden Punkt einer Gruppe und updated den Spin entsprechend
+dieser Wahrscheinlichkeit. Dies wird fuer jeden Punkt $ntrial$ mal durchgefuehrt
+\item [magnetisierung] Aus dem Spinvektor wird die Magnetisierung mit Hilfe eines Reduce-Unrolling-Algorithmus berechnet
+\end{description}
+Ein Flowchart fuer die Implementierung auf der GPU ist in Abb. \ref{fig:flowchart} dargestellt.
+Fuer die Ausführung werden gleichzeitig immer nur $nvol/2$ Threads benötigt, da nur die Hälfte der Daten gleichzeitig bearbeitet wird.
 \end{document}
