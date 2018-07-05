@@ -51,7 +51,7 @@ def ploti(thing):
 
         for index, value in enumerate(y):
 
-            if (value > .1):
+            if (value > .2):
                 kappa.append(x[index])
                 mean.append(y[index])
                 std.append(y_err[index])

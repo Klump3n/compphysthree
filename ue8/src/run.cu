@@ -121,6 +121,8 @@ int main(int argc, char **argv)
    m=magnet();
    mm=cuCabs(m)*cuCabs(m);
 
+   printf("UPD\t S     \t\t |M|^2  \t avg(|M|^2)  \t std(|M|^2) \t tau(|M|^2) \t tau(S) \t DEF \n");
+
    clear5(3, 2*nsweep);
    acc=0.0;
    iStart=seconds();
@@ -151,7 +153,7 @@ int main(int argc, char **argv)
       /* when the varByExpMM was small 10 times */
       if ((thermCounter > 9) && !(thermalized))
         {
-          printf("Thermalization took %d steps\n", i);
+          printf("\n\n\nThermalization took %d steps\n", i);
           printf("DELTA = %f\n", delta);
           printf("UPD\t S     \t\t |M|^2  \t avg(|M|^2)  \t std(|M|^2) \t tau(|M|^2) \t tau(S) \t DEF \n");
           thermalized = true;
@@ -166,9 +168,9 @@ int main(int argc, char **argv)
           /* mm_array[i] = mm; */
           /* s_array[i] = s; */
           /* printf("%d\t %f\t %f\t %f\t %f\t %f\t %f\t %f\t %f\t %f\t %f\n",i,acc,delta,s,cuCreal(m),cuCimag(m),mm, aver5(2), sigma5(2), tauint5(2), tauint5(1)); */
-          printf("%d\t %f\t %f\t %f\t %f\t %f\t %f\t %f\n",i,s,mm, aver5(2), sigma5(2), tau5(2), tau5(1), factor_MM);
         }
 
+      printf("%d\t %f\t %f\t %f\t %f\t %f\t %f\t %f\n",i,s,mm, aver5(2), sigma5(2), tau5(2), tau5(1), factor_MM);
    }
 
    printf("\n\n");

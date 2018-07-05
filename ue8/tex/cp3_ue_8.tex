@@ -173,8 +173,22 @@ Fuer $L=16$, also die hoechste hier getestete Aufloesung erhaelt man aus dem Fit
   \caption{Magnetisierung fuer verschiedene L und Bestimmung von $\kappa_c$}\label{fig:fit}
 \end{figure}
 
+\section{Planung auf der GPU}
 
+\subsection{Main Funktion auf der CPU}
+\begin{itemize}
+\item \texttt{(ptr auf phi auf der GPU) phi} = \texttt{init\_phi()}
+  Erstelle ein anfaengliches $\phi$
+  \begin{itemize}
+  \item \texttt{(ptr auf Zufallszahlen auf GPU) rnd} = \texttt{randgpu(3*nvol*ntrial)}
+  \item \texttt{sweep(phi, rnd)}
+  \item \texttt{}
+  \end{itemize}
+\end{itemize}
 
+\subsection{\texttt{randgpu(int N)} auf der GPU}
+Diese Funktion erstellt $N$ Zufallszahlen auf der GPU und gibt einen Pointer auf
+dieses GPU Array zurueck.
 
 
 
