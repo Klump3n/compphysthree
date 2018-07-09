@@ -22,6 +22,8 @@ set(src
    global.h
    randgpu.cu
    randgpu.h
+   added_stuff.cu
+   added_stuff.h
    )
 
 #The executable (has 'main')

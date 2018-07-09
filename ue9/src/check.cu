@@ -10,6 +10,8 @@
 #include "randgpu.h"
 #include "metropolis.h"
 
+#include "added_stuff.h"
+
 void print_nn(int k)
 {
    int i,j,idx;
@@ -152,6 +154,82 @@ int check_alocal()
    return (ifail==0);
 }
 
+void added_stuff_checks()
+{
+  int *target_array = (int *) malloc(ndim*sizeof(int));
+
+  int index = 0;
+  memset(target_array, 0, ndim*sizeof(int));
+  indexArray(index, target_array);
+  printf("%d: ", index);
+  for (int j=1; j<=ndim; j++)
+    {
+      printf("%d ", target_array[j]);
+    }
+  printf("\n");
+
+  index = 1;
+  memset(target_array, 0, ndim*sizeof(int));
+  indexArray(index, target_array);
+  printf("%d: ", index);
+    for (int j=1; j<=ndim; j++)
+      {
+        printf("%d ", target_array[j]);
+      }
+  printf("\n");
+
+  index = 7;
+  memset(target_array, 0, ndim*sizeof(int));
+  indexArray(index, target_array);
+  printf("%d: ", index);
+    for (int j=1; j<=ndim; j++)
+      {
+        printf("%d ", target_array[j]);
+      }
+  printf("\n");
+
+  index = 8;
+  memset(target_array, 0, ndim*sizeof(int));
+  indexArray(index, target_array);
+  printf("%d: ", index);
+    for (int j=1; j<=ndim; j++)
+      {
+        printf("%d ", target_array[j]);
+      }
+  printf("\n");
+
+  index = 9;
+  memset(target_array, 0, ndim*sizeof(int));
+  indexArray(index, target_array);
+  printf("%d: ", index);
+    for (int j=1; j<=ndim; j++)
+      {
+        printf("%d ", target_array[j]);
+      }
+  printf("\n");
+
+  index = 24;
+  memset(target_array, 0, ndim*sizeof(int));
+  indexArray(index, target_array);
+  printf("%d: ", index);
+    for (int j=1; j<=ndim; j++)
+      {
+        printf("%d ", target_array[j]);
+      }
+  printf("\n");
+
+  index = 63;
+  memset(target_array, 0, ndim*sizeof(int));
+  indexArray(index, target_array);
+  printf("%d: ", index);
+  for (int j=1; j<=ndim; j++)
+    {
+      printf("%d ", target_array[j]);
+    }
+  printf("\n");
+
+}
+
 int check_update_spin(double delta, double rnd2)
 {
    int idx,acc,ifail;
@@ -289,6 +367,9 @@ int main(int argc, char **argv)
       printf(" Check4 erfolgreich.\n\n");
    else
       printf(" Check4 fehlgeschalgen!.\n\n");
+
+   printf("Checking added stuff\n");
+   added_stuff_checks();
 
    free(lsize);
    free(nn[0]);
