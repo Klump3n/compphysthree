@@ -10,8 +10,24 @@
 #include "metropolis.h"
 #include "spin.h"
 #include "common.h"
+#include "added_stuff.h"
+#include "added_stuff_gpu.h"
+
+#include <cuda_runtime.h>
 
 #define MIN_NARG 6
+
+#define CHECK(call)                                             \
+  {                                                             \
+    const cudaError_t error = call;                             \
+    if (error != cudaSuccess)                                   \
+      {                                                         \
+        fprintf(stderr, "Error: %s:%d, ", __FILE__, __LINE__);  \
+        fprintf(stderr, "code: %d, reason: %s\n", error,        \
+                cudaGetErrorString(error));                     \
+        exit(1);                                                \
+      }                                                         \
+  }
 
 void usage(void)
 {
@@ -47,6 +63,76 @@ double tune_delta(double acc, double delta)
    return delta;
 }
 
+void gpu_stuff()
+{
+  int *d_nn;
+  CHECK(cudaMalloc((void**)&d_nn,nvol*(2*ndim+1)*sizeof(int)));
+  CHECK(cudaMemcpy(d_nn, nn[0], nvol*(2*ndim+1)*sizeof(int), cudaMemcpyHostToDevice));
+
+  CHECK(cudaMemcpyToSymbol(devLambda, &lambda, sizeof(double)));
+  CHECK(cudaMemcpyToSymbol(devKappa, &kappa, sizeof(double)));
+  CHECK(cudaMemcpyToSymbol(devNdim, &ndim, sizeof(int)));
+  CHECK(cudaMemcpyToSymbol(devNvol, &nvol, sizeof(int)));
+
+  int *evenArray = (int *) calloc((int) (nvol/2), sizeof(int));
+  int *oddArray = (int *) calloc((int) (nvol/2), sizeof(int));
+  evenOddIndices(evenArray, oddArray);
+
+  int *d_evenArray;
+  CHECK(cudaMalloc((void**)&d_evenArray, ((int) (nvol/2)) * sizeof(int)));
+  CHECK(cudaMemcpy(d_evenArray, evenArray, ((int) (nvol/2)) * sizeof(int), cudaMemcpyHostToDevice));
+  int *d_oddArray;
+  CHECK(cudaMalloc((void**)&d_oddArray, ((int) (nvol/2)) * sizeof(int)));
+  CHECK(cudaMemcpy(d_oddArray, oddArray, ((int) (nvol/2)) * sizeof(int), cudaMemcpyHostToDevice));
+
+  spin *d_bEvenArray;
+  CHECK(cudaMalloc((void**)&d_bEvenArray, ((int) (nvol/2)) * sizeof(spin)));
+  CHECK(cudaMemset(d_bEvenArray, 0, ((int) (nvol/2))*sizeof(spin)));
+  spin *d_bOddArray;
+  CHECK(cudaMalloc((void**)&d_bOddArray, ((int) (nvol/2)) * sizeof(spin)));
+  CHECK(cudaMemset(d_bOddArray, 0, ((int) (nvol/2))*sizeof(spin)));
+
+  spin *d_phi;
+  CHECK(cudaMalloc((void**)&d_phi, nvol*sizeof(spin)));
+  CHECK(cudaMemcpy(d_phi, phi, nvol*sizeof(spin), cudaMemcpyHostToDevice));
+
+  int *d_accept;
+  CHECK(cudaMalloc((void**)&d_accept, ((int) (nvol/2))*sizeof(int)));
+  CHECK(cudaMemset(d_accept, 0, ((int) (nvol/2))*sizeof(int)));
+
+  spin *d_phi_intermediate;
+  CHECK(cudaMalloc((void**)&d_phi_intermediate, nvol*sizeof(spin)));
+  CHECK(cudaMemset(d_phi_intermediate, 0, nvol*sizeof(spin)));
+
+  double *d_aloc_comp;
+  CHECK(cudaMalloc((void**)&d_aloc_comp, ((int) (nvol/2))*sizeof(double)));
+  CHECK(cudaMemset(d_aloc_comp, 0, ((int) (nvol/2))*sizeof(double)));
+
+  double *d_aloc_calc;
+  CHECK(cudaMalloc((void**)&d_aloc_calc, ((int) (nvol/2))*sizeof(double)));
+  CHECK(cudaMemset(d_aloc_calc, 0, ((int) (nvol/2))*sizeof(double)));
+
+  /* NTRIAL IS 10!!! */
+  double *d_rnd = randgpu_device_ptr(3*nvol*10);
+
+  double delta = 1.0;
+  
+  int acc_sum = gpu_sweep(d_phi,
+                          d_evenArray,
+                          d_oddArray,
+                          d_bEvenArray,
+                          d_bOddArray,
+                          d_nn,
+                          d_accept,
+                          d_phi_intermediate,
+                          d_aloc_comp,
+                          d_aloc_calc,
+                          d_rnd,
+                          delta
+                          );
+
+}
+
 int main(int argc, char **argv)
 {
    printf("%s Starting...\n", argv[0]);
@@ -74,6 +160,7 @@ int main(int argc, char **argv)
 
    delta=0.2;
    h=make_spin(reh,0.0);
+   CHECK(cudaMemcpyToSymbol(devH, &h, sizeof(spin)));
 
    // print out parameters
    printf("Gittergroesse: %d",lsize[1]);
@@ -124,6 +211,8 @@ int main(int argc, char **argv)
 
    printf("\n\n");
    printf("%d updates took %f sec.\n\n",nsweep,seconds()-iStart);
+
+   gpu_stuff();
 
    free(lsize);
    free(nn[0]);

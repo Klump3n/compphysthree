@@ -159,6 +159,10 @@ void added_stuff_checks()
   int *target_array = (int *) malloc(ndim*sizeof(int));
 
   int index = 0;
+<<<<<<< HEAD
+  int evenOdd = 0;
+=======
+>>>>>>> ddc12ebc74ec86c0fa872a0f6877224586b41ed4
   memset(target_array, 0, ndim*sizeof(int));
   indexArray(index, target_array);
   printf("%d: ", index);
@@ -166,6 +170,18 @@ void added_stuff_checks()
     {
       printf("%d ", target_array[j]);
     }
+<<<<<<< HEAD
+  evenOdd = indexEvenOdd(target_array);
+  if (evenOdd == 0)
+    {
+      printf("even");
+    }
+  else
+    {
+      printf("odd");
+    }
+=======
+>>>>>>> ddc12ebc74ec86c0fa872a0f6877224586b41ed4
   printf("\n");
 
   index = 1;
@@ -176,6 +192,18 @@ void added_stuff_checks()
       {
         printf("%d ", target_array[j]);
       }
+<<<<<<< HEAD
+    evenOdd = indexEvenOdd(target_array);
+    if (evenOdd == 0)
+      {
+        printf("even");
+      }
+    else
+      {
+        printf("odd");
+      }
+=======
+>>>>>>> ddc12ebc74ec86c0fa872a0f6877224586b41ed4
   printf("\n");
 
   index = 7;
@@ -186,6 +214,18 @@ void added_stuff_checks()
       {
         printf("%d ", target_array[j]);
       }
+<<<<<<< HEAD
+    evenOdd = indexEvenOdd(target_array);
+    if (evenOdd == 0)
+      {
+        printf("even");
+      }
+    else
+      {
+        printf("odd");
+      }
+=======
+>>>>>>> ddc12ebc74ec86c0fa872a0f6877224586b41ed4
   printf("\n");
 
   index = 8;
@@ -196,6 +236,18 @@ void added_stuff_checks()
       {
         printf("%d ", target_array[j]);
       }
+<<<<<<< HEAD
+    evenOdd = indexEvenOdd(target_array);
+    if (evenOdd == 0)
+      {
+        printf("even");
+      }
+    else
+      {
+        printf("odd");
+      }
+=======
+>>>>>>> ddc12ebc74ec86c0fa872a0f6877224586b41ed4
   printf("\n");
 
   index = 9;
@@ -206,6 +258,18 @@ void added_stuff_checks()
       {
         printf("%d ", target_array[j]);
       }
+<<<<<<< HEAD
+    evenOdd = indexEvenOdd(target_array);
+    if (evenOdd == 0)
+      {
+        printf("even");
+      }
+    else
+      {
+        printf("odd");
+      }
+=======
+>>>>>>> ddc12ebc74ec86c0fa872a0f6877224586b41ed4
   printf("\n");
 
   index = 24;
@@ -216,6 +280,18 @@ void added_stuff_checks()
       {
         printf("%d ", target_array[j]);
       }
+<<<<<<< HEAD
+    evenOdd = indexEvenOdd(target_array);
+    if (evenOdd == 0)
+      {
+        printf("even");
+      }
+    else
+      {
+        printf("odd");
+      }
+=======
+>>>>>>> ddc12ebc74ec86c0fa872a0f6877224586b41ed4
   printf("\n");
 
   index = 63;
@@ -226,6 +302,18 @@ void added_stuff_checks()
     {
       printf("%d ", target_array[j]);
     }
+<<<<<<< HEAD
+  evenOdd = indexEvenOdd(target_array);
+  if (evenOdd == 0)
+    {
+      printf("even");
+    }
+  else
+    {
+      printf("odd");
+    }
+=======
+>>>>>>> ddc12ebc74ec86c0fa872a0f6877224586b41ed4
   printf("\n");
 
 }

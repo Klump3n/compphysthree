@@ -14,4 +14,8 @@ EXTERN spin h;
 
 EXTERN spin *phi;
 
+__device__ double devLambda, devKappa;
+__device__ int devNdim, devNvol;
+__device__ spin devH;
+
 #undef EXTERN

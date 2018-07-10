@@ -90,3 +90,33 @@ double* randgpu(unsigned int N)
 
    return h_rnd;
 }
+
+double* randgpu_device_ptr(unsigned int N)
+{
+  unsigned int grd;
+
+  grd=(N+BLOCKSIZE-1)/BLOCKSIZE;
+
+  if (d_states==NULL)
+    alloc_random(grd);
+
+  if (gridsize<grd)
+    {
+#ifdef DEBUG
+      printf("reallocate buffers, max. grid: %d, block: %d, N: %d, grid: %d\n",gridsize,BLOCKSIZE,N,grd);
+#endif
+      free(h_rnd);
+      CHECK(cudaFree(d_rnd));
+      CHECK(cudaFree(d_states));
+      alloc_random(grd);
+    }
+
+#ifdef DEBUG
+  printf("max. grid: %d, block: %d, N: %d, grid: %d\n",gridsize,BLOCKSIZE,N,grd);
+#endif
+
+  rnd_gpu<<<grd,BLOCKSIZE>>>(d_rnd,d_states);
+  CHECK(cudaDeviceSynchronize());
+
+  return d_rnd;
+}
