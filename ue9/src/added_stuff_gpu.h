@@ -27,6 +27,7 @@ extern __global__ void alocal_gpu(spin *d_phi, spin *d_bArray, double *d_aloc);
 /* extern __global__ double alocal(int idx); */
 /* extern __global__ double alocal2(int idx, spin b); */
 extern __global__ void compute_b(spin *d_phi, int *d_nn, spin *d_bArray);
+extern __global__ void modify_spin(spin *d_phi, double *d_rnd, double delta, int ktrial);
 
 
 #endif

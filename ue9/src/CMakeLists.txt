@@ -24,11 +24,8 @@ set(src
    randgpu.h
    added_stuff.cu
    added_stuff.h
-<<<<<<< HEAD
    added_stuff_gpu.cu
    added_stuff_gpu.h
-=======
->>>>>>> ddc12ebc74ec86c0fa872a0f6877224586b41ed4
    )
 
 #The executable (has 'main')

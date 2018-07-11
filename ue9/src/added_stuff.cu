@@ -1,12 +1,8 @@
-<<<<<<< HEAD
 #include "added_stuff.h"
-=======
->>>>>>> ddc12ebc74ec86c0fa872a0f6877224586b41ed4
 #include "global.h"
 #include <stdio.h>
 
 
-<<<<<<< HEAD
 void evenOddIndices(int *evenArray, int *oddArray)
 {
   int j=0,
@@ -46,16 +42,6 @@ int indexEvenOdd(int *index_array)
     }
 
   return sum % 2;               /* 0 if even, 1 if odd */
-=======
-void evenIndices(int *index_array, int *target_array)
-{
-
-}
-
-void oddIndices(int *index_array, int *target_array)
-{
-
->>>>>>> ddc12ebc74ec86c0fa872a0f6877224586b41ed4
 }
 
 /*
@@ -68,11 +54,7 @@ void oddIndices(int *index_array, int *target_array)
  */
 void indexArray(
                 int index,
-<<<<<<< HEAD
                 int *target_array /* has to be of dim ndim, index 0 will not be used */
-=======
-                int *target_array /* has to be of dim ndim */
->>>>>>> ddc12ebc74ec86c0fa872a0f6877224586b41ed4
                 )
 {
   int *subFact = (int* ) calloc(ndim, sizeof(int));
@@ -83,10 +65,6 @@ void indexArray(
       subFact[i] = subFact[i-1] * lsize[i-1];
     }
 
-<<<<<<< HEAD
-=======
-  int calcIndex;
->>>>>>> ddc12ebc74ec86c0fa872a0f6877224586b41ed4
   double cand = 0.0;
 
   for (int i=ndim; i>0; i--)
