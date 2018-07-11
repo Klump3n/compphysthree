@@ -17,6 +17,7 @@ int update_spin(int idx, double* rnd, double del, int ntrial)
    a=alocal(idx);
    for (k=0; k<ntrial; k++)
    {
+     /* printf("rnd nums %f, %f, %f\n", rnd[0], rnd[1], rnd[2]); */
       tmp=phi[idx];
       phi[idx]=make_spin(cuCreal(phi[idx])+del*(rnd[0]-0.5),cuCimag(phi[idx])+del*(rnd[1]-0.5));
       ap=alocal2(idx);
@@ -50,4 +51,35 @@ double metro_sweep(double delta)
    }
 
    return ((double)(acc) / (double)(nvol*NTRIAL));
+}
+
+double metro_sweep_alt(double delta, int *evenArray, int *oddArray, double *rnd)
+{
+  int idx, acc;
+  /* double *rnd; */
+
+  int halfArrayLength = ceil((float) (nvol) / 2.);
+
+  /* rnd=randgpu(nvol*3*NTRIAL); */
+
+  acc=0;
+  delta=2.0*delta;
+
+  int evenIndex = 0;
+  for (idx=0; idx<halfArrayLength; idx++)
+    {
+      evenIndex = evenArray[idx];
+      acc+=update_spin(evenIndex,rnd,delta,NTRIAL);
+      rnd+=(3*NTRIAL);
+    }
+
+  int oddIndex = 0;
+  for (idx=0; idx<halfArrayLength; idx++)
+    {
+      oddIndex = oddArray[idx];
+      acc+=update_spin(oddIndex,rnd,delta,NTRIAL);
+      rnd+=(3*NTRIAL);
+    }
+
+  return ((double)(acc) / (double)(nvol*NTRIAL));
 }

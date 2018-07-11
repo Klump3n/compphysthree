@@ -1,7 +1,7 @@
+#include "spin.h"
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "spin.h"
 #include "global.h"
 #include "randgpu.h"
 #include "added_stuff.h"
@@ -19,19 +19,20 @@
       }                                                         \
   }
 
-double gpu_sweep(spin *d_phi,
-              int *d_evenArray,
-              int *d_oddArray,
-              spin *d_bEvenArray,
-              spin *d_bOddArray,
-              int *d_nn,
-              int *d_accept,
-              spin *d_phi_intermediate,
-              double *d_aloc_comp,
-              double *d_aloc_calc,
-              double *d_rnd,
-              double delta
-              )
+double gpu_sweep(
+                 spin *d_phi,
+                 int *d_evenArray,
+                 int *d_oddArray,
+                 spin *d_bEvenArray,
+                 spin *d_bOddArray,
+                 int *d_nn,
+                 int *d_accept,
+                 spin *d_phi_intermediate,
+                 double *d_aloc_comp,
+                 double *d_aloc_calc,
+                 double *d_rnd,
+                 double delta
+                 )
 {
 
   delta = 2.0 * delta;          /* consistency */
@@ -69,7 +70,7 @@ double gpu_sweep(spin *d_phi,
   /* even sweep */
   /* b even */
   /**/
-  compute_b<<<blockSize, gridSize>>>(d_phi, d_nn, d_bEvenArray);
+  compute_b_gpu<<<blockSize, gridSize>>>(d_phi, d_nn, d_bEvenArray);
   CHECK(cudaDeviceSynchronize());
 
   alocal_gpu<<<gridSize, blockSize>>>(d_phi, d_bEvenArray, d_aloc_comp);
@@ -104,7 +105,7 @@ double gpu_sweep(spin *d_phi,
   /* odd sweep */
   /* b odd */
   /**/
-  compute_b<<<blockSize, gridSize>>>(d_phi, d_nn, d_bOddArray);
+  compute_b_gpu<<<blockSize, gridSize>>>(d_phi, d_nn, d_bOddArray);
   CHECK(cudaDeviceSynchronize());
 
   alocal_gpu<<<gridSize, blockSize>>>(d_phi, d_bOddArray, d_aloc_comp);
@@ -145,7 +146,7 @@ void backup_spin(spin *d_phi, spin *d_phi_intermediate)
 }
 
 __global__
-void compute_b(spin *d_phi, int *d_nn, spin *d_bArray)
+void compute_b_gpu(spin *d_phi, int *d_nn, spin *d_bArray)
 {
 
   unsigned int idx = blockIdx.x * blockDim.x + threadIdx.x;
