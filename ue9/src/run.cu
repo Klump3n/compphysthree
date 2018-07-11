@@ -63,8 +63,16 @@ double tune_delta(double acc, double delta)
    return delta;
 }
 
-void gpu_stuff()
+void gpu_stuff(int nsweep)
 {
+
+  // set up device
+  int dev = 0;
+  cudaDeviceProp deviceProp;
+  CHECK(cudaGetDeviceProperties(&deviceProp, dev));
+  printf("Using Device %d: %s\n", dev, deviceProp.name);
+  CHECK(cudaSetDevice(dev));
+
   int *d_nn;
   CHECK(cudaMalloc((void**)&d_nn,nvol*(2*ndim+1)*sizeof(int)));
   CHECK(cudaMemcpy(d_nn, nn[0], nvol*(2*ndim+1)*sizeof(int), cudaMemcpyHostToDevice));
@@ -74,62 +82,80 @@ void gpu_stuff()
   CHECK(cudaMemcpyToSymbol(devNdim, &ndim, sizeof(int)));
   CHECK(cudaMemcpyToSymbol(devNvol, &nvol, sizeof(int)));
 
-  int *evenArray = (int *) calloc((int) (nvol/2), sizeof(int));
-  int *oddArray = (int *) calloc((int) (nvol/2), sizeof(int));
+  int halfArrayLength = ceil((float) (nvol) / 2.);
+
+  int *evenArray = (int *) calloc(halfArrayLength, sizeof(int));
+  int *oddArray = (int *) calloc(halfArrayLength, sizeof(int));
   evenOddIndices(evenArray, oddArray);
 
   int *d_evenArray;
-  CHECK(cudaMalloc((void**)&d_evenArray, ((int) (nvol/2)) * sizeof(int)));
-  CHECK(cudaMemcpy(d_evenArray, evenArray, ((int) (nvol/2)) * sizeof(int), cudaMemcpyHostToDevice));
+  CHECK(cudaMalloc((void**)&d_evenArray, halfArrayLength * sizeof(int)));
+  CHECK(cudaMemcpy(d_evenArray, evenArray, halfArrayLength * sizeof(int), cudaMemcpyHostToDevice));
   int *d_oddArray;
-  CHECK(cudaMalloc((void**)&d_oddArray, ((int) (nvol/2)) * sizeof(int)));
-  CHECK(cudaMemcpy(d_oddArray, oddArray, ((int) (nvol/2)) * sizeof(int), cudaMemcpyHostToDevice));
+  CHECK(cudaMalloc((void**)&d_oddArray, halfArrayLength * sizeof(int)));
+  CHECK(cudaMemcpy(d_oddArray, oddArray, halfArrayLength * sizeof(int), cudaMemcpyHostToDevice));
 
   spin *d_bEvenArray;
-  CHECK(cudaMalloc((void**)&d_bEvenArray, ((int) (nvol/2)) * sizeof(spin)));
-  CHECK(cudaMemset(d_bEvenArray, 0, ((int) (nvol/2))*sizeof(spin)));
+  CHECK(cudaMalloc((void**)&d_bEvenArray, halfArrayLength * sizeof(spin)));
+  CHECK(cudaMemset(d_bEvenArray, 0, halfArrayLength * sizeof(spin)));
   spin *d_bOddArray;
-  CHECK(cudaMalloc((void**)&d_bOddArray, ((int) (nvol/2)) * sizeof(spin)));
-  CHECK(cudaMemset(d_bOddArray, 0, ((int) (nvol/2))*sizeof(spin)));
+  CHECK(cudaMalloc((void**)&d_bOddArray, halfArrayLength * sizeof(spin)));
+  CHECK(cudaMemset(d_bOddArray, 0, halfArrayLength * sizeof(spin)));
 
   spin *d_phi;
   CHECK(cudaMalloc((void**)&d_phi, nvol*sizeof(spin)));
   CHECK(cudaMemcpy(d_phi, phi, nvol*sizeof(spin), cudaMemcpyHostToDevice));
 
   int *d_accept;
-  CHECK(cudaMalloc((void**)&d_accept, ((int) (nvol/2))*sizeof(int)));
-  CHECK(cudaMemset(d_accept, 0, ((int) (nvol/2))*sizeof(int)));
+  CHECK(cudaMalloc((void**)&d_accept, halfArrayLength * sizeof(int)));
+  CHECK(cudaMemset(d_accept, 0, halfArrayLength * sizeof(int)));
 
   spin *d_phi_intermediate;
   CHECK(cudaMalloc((void**)&d_phi_intermediate, nvol*sizeof(spin)));
   CHECK(cudaMemset(d_phi_intermediate, 0, nvol*sizeof(spin)));
 
   double *d_aloc_comp;
-  CHECK(cudaMalloc((void**)&d_aloc_comp, ((int) (nvol/2))*sizeof(double)));
-  CHECK(cudaMemset(d_aloc_comp, 0, ((int) (nvol/2))*sizeof(double)));
+  CHECK(cudaMalloc((void**)&d_aloc_comp, halfArrayLength * sizeof(double)));
+  CHECK(cudaMemset(d_aloc_comp, 0, halfArrayLength * sizeof(double)));
 
   double *d_aloc_calc;
-  CHECK(cudaMalloc((void**)&d_aloc_calc, ((int) (nvol/2))*sizeof(double)));
-  CHECK(cudaMemset(d_aloc_calc, 0, ((int) (nvol/2))*sizeof(double)));
+  CHECK(cudaMalloc((void**)&d_aloc_calc, halfArrayLength * sizeof(double)));
+  CHECK(cudaMemset(d_aloc_calc, 0, halfArrayLength * sizeof(double)));
 
   /* NTRIAL IS 10!!! */
   double *d_rnd = randgpu_device_ptr(3*nvol*10);
+  /* double *doublearray = (double *) calloc(nvol, sizeof(double)); */
+  /* CHECK(cudaMemcpy(doublearray, d_rnd, nvol*3*10*sizeof(double), cudaMemcpyDeviceToHost)); */
+  /* for (int i=0; i<nvol*30; i++) */
+  /*   { */
+  /*     printf("%d, %f\n", i, doublearray[i]); */
+  /*   } */
 
-  double delta = 1.0;
-  
-  int acc_sum = gpu_sweep(d_phi,
-                          d_evenArray,
-                          d_oddArray,
-                          d_bEvenArray,
-                          d_bOddArray,
-                          d_nn,
-                          d_accept,
-                          d_phi_intermediate,
-                          d_aloc_comp,
-                          d_aloc_calc,
-                          d_rnd,
-                          delta
-                          );
+  double delta = .2;
+
+  double acc = 0.0;
+  for (int i=1; i<=nsweep; i++)
+    {
+      acc=gpu_sweep(d_phi,
+                    d_evenArray,
+                    d_oddArray,
+                    d_bEvenArray,
+                    d_bOddArray,
+                    d_nn,
+                    d_accept,
+                    d_phi_intermediate,
+                    d_aloc_comp,
+                    d_aloc_calc,
+                    d_rnd,
+                    delta
+                    );
+      delta=tune_delta(acc,delta);
+      /* s=action(); */
+      /* m=magnet(); */
+      /* mm=cuCabs(m)*cuCabs(m); */
+      /* printf("%d\t %f\t %f\t %f\t %f\t %f\t %f\n",i,acc,delta,s,cuCreal(m),cuCimag(m),mm); */
+      printf("%d: acc = %f, delta = %f\n", i, acc, delta);
+    }
 
 }
 
@@ -212,7 +238,7 @@ int main(int argc, char **argv)
    printf("\n\n");
    printf("%d updates took %f sec.\n\n",nsweep,seconds()-iStart);
 
-   gpu_stuff();
+   gpu_stuff(nsweep);
 
    free(lsize);
    free(nn[0]);
