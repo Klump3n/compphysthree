@@ -43,7 +43,7 @@ double gpu_sweep(
 
   int halfArrayLength = ceil((float) (nvol) / 2.);
 
-  int *h_accept = (int *) calloc(halfArrayLength, sizeof(int));
+//  int *h_accept = (int *) calloc(halfArrayLength, sizeof(int));
 
   if (nvol/2 < 128)
     {
@@ -87,17 +87,17 @@ double gpu_sweep(
       CHECK(cudaDeviceSynchronize());
     }
 
-  /* get d_accept and sum it all up */
-  CHECK(cudaMemcpy(h_accept, d_accept, ((int)(nvol/2))*sizeof(int), cudaMemcpyDeviceToHost));
-  for (int i=0; i<((int)(nvol/2)); i++)
-    {
-      acc_sum += h_accept[i];
-    }
+ // /* get d_accept and sum it all up */
+ // CHECK(cudaMemcpy(h_accept, d_accept, ((int)(nvol/2))*sizeof(int), cudaMemcpyDeviceToHost));
+ // for (int i=0; i<((int)(nvol/2)); i++)
+ //   {
+ //     acc_sum += h_accept[i];
+ //   }
 
   /* end even */
 
   /* reset values of helper arrays */
-  CHECK(cudaMemset(d_accept, 0, halfArrayLength*sizeof(int)));
+//  CHECK(cudaMemset(d_accept, 0, halfArrayLength*sizeof(int)));
   CHECK(cudaMemset(d_phi_intermediate, 0, nvol*sizeof(spin)));
   CHECK(cudaMemset(d_aloc_comp, 0.0, halfArrayLength*sizeof(double)));
   CHECK(cudaMemset(d_aloc_calc, 0.0, halfArrayLength*sizeof(double)));
@@ -124,14 +124,20 @@ double gpu_sweep(
       CHECK(cudaDeviceSynchronize());
     }
 
-  /* get d_accept and sum it all up */
-  CHECK(cudaMemcpy(h_accept, d_accept, halfArrayLength*sizeof(int), cudaMemcpyDeviceToHost));
-  for (int i=0; i<((int)(nvol/2)); i++)
-    {
-      acc_sum += h_accept[i];
-    }
+dim3 unrollGrid, unrollBlock;
+unrollGrid.x = ceil((float) (gridSize.x)/2.);
+unrollBlock.x = blockSize.x;
 
-  /* end even */
+int *h_accept = (int *) calloc(unrollGrid.x, sizeof(int));
+reduceUnrolling<<<unrollGrid,unrollBlock>>>(d_accept,h_accept,halfArrayLength);
+//  /* get d_accept and sum it all up */
+//  CHECK(cudaMemcpy(h_accept, d_accept, halfArrayLength*sizeof(int), cudaMemcpyDeviceToHost));
+//  for (int i=0; i<((int)(nvol/2)); i++)
+//    {
+//      acc_sum += h_accept[i];
+//    }
+
+  /* end odd*/
   double percentage = (float) (acc_sum)/ (float) (ntrial*nvol);
   /* printf("%d of %d: %f\n", acc_sum, ntrial*nvol, percentage); */
   return percentage;
@@ -227,3 +233,33 @@ void alocal_gpu(spin *d_phi, spin *d_bArray, double *d_aloc)
 
   d_aloc[idx] = -a;
 }
+
+
+__global__ void reduceUnrolling (int *g_idata, int *g_odata, unsigned int n)
+{
+    // set thread ID
+    unsigned int tid = threadIdx.x;
+    unsigned int idx = blockIdx.x * blockDim.x * 2 + threadIdx.x;
+
+    // unroll 2
+    if (idx + blockDim.x < n)
+    {
+        g_idata[idx] += g_idata[idx + blockDim.x];
+    }
+    __syncthreads();
+
+    // in-place reduction in global memory
+    for (int stride = blockDim.x / 2; stride > 0; stride /= 2)
+    {
+        if (tid < stride)
+        {
+            g_idata[idx] += g_idata[idx + stride];
+        }
+
+        // synchronize within threadblock
+        __syncthreads();
+    }
+
+    // write result for this block to global mem
+    if (tid == 0) g_odata[blockIdx.x] = g_idata[idx];
+	}

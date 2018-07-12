@@ -147,11 +147,11 @@ void gpu_stuff(int nsweep)
   for (int i=1; i<=nsweep; i++)
     {
 
-      cpu_acc = metro_sweep_alt(cpu_delta, evenArray, oddArray, rnd);
-      cpu_delta=tune_delta(cpu_acc,cpu_delta);
-
-      m=magnet();
-      mm=cuCabs(m)*cuCabs(m);
+//      cpu_acc = metro_sweep_alt(cpu_delta, evenArray, oddArray, rnd);
+//      cpu_delta=tune_delta(cpu_acc,cpu_delta);
+//
+//      m=magnet();
+//      mm=cuCabs(m)*cuCabs(m);
 
       acc=gpu_sweep(d_phi,
                     d_evenArray,
@@ -167,10 +167,10 @@ void gpu_stuff(int nsweep)
                     delta
                     );
 
-      memcpy(backup_phi, phi, nvol*sizeof(spin)); /* keep original phi */
-      CHECK(cudaMemcpy(phi, d_phi, nvol*sizeof(spin), cudaMemcpyDeviceToHost));
+//      memcpy(backup_phi, phi, nvol*sizeof(spin)); /* keep original phi */
+//      CHECK(cudaMemcpy(phi, d_phi, nvol*sizeof(spin), cudaMemcpyDeviceToHost));
       gpu_m = magnet();
-      memcpy(phi, backup_phi, nvol*sizeof(spin)); /* restore phi */
+//      memcpy(phi, backup_phi, nvol*sizeof(spin)); /* restore phi */
 
       gpu_mm=cuCabs(gpu_m)*cuCabs(gpu_m);
 
