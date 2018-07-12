@@ -147,6 +147,12 @@ void gpu_stuff(int nsweep)
   for (int i=1; i<=nsweep; i++)
     {
 
+      cpu_acc = metro_sweep_alt(cpu_delta, evenArray, oddArray, rnd);
+      cpu_delta=tune_delta(cpu_acc,cpu_delta);
+
+      m=magnet();
+      mm=cuCabs(m)*cuCabs(m);
+
       acc=gpu_sweep(d_phi,
                     d_evenArray,
                     d_oddArray,
@@ -161,20 +167,14 @@ void gpu_stuff(int nsweep)
                     delta
                     );
 
-      /* memcpy(backup_phi, phi, nvol*sizeof(spin)); /\* keep original phi *\/ */
-
+      memcpy(backup_phi, phi, nvol*sizeof(spin)); /* keep original phi */
       CHECK(cudaMemcpy(phi, d_phi, nvol*sizeof(spin), cudaMemcpyDeviceToHost));
       gpu_m = magnet();
+      memcpy(phi, backup_phi, nvol*sizeof(spin)); /* restore phi */
+
       gpu_mm=cuCabs(gpu_m)*cuCabs(gpu_m);
 
-      /* memcpy(phi, backup_phi, nvol*sizeof(spin)); /\* restore phi *\/ */
-
-      /* cpu_acc = metro_sweep_alt(delta, evenArray, oddArray, rnd); */
-
       delta=tune_delta(acc,delta);
-      /* cpu_delta=tune_delta(cpu_acc,cpu_delta); */
-      /* m=magnet(); */
-      /* mm=cuCabs(m)*cuCabs(m); */
 
       /* printf("%d\t %f\t %f\t %f\t %f\t %f\t %f\n",i,acc,delta,s,cuCreal(m),cuCimag(m),mm); */
 
@@ -239,8 +239,16 @@ int main(int argc, char **argv)
    phi=(spin*)malloc(nvol*sizeof(spin));
    init_phi(phi0);
    printf("%f sec.\n\n",seconds()-iStart);
+
+
    spin *initial_phi = (spin *) malloc(nvol*sizeof(spin));
    memcpy(initial_phi, phi, nvol*sizeof(spin)); /* keep original phi */
+   /* printf("i phi init_phi\n"); */
+   /* for (int i=0; i<nvol; i++) */
+   /*   { */
+   /*     printf("%d, %f, %f\n", i, cuCabs(phi[i]), cuCabs(initial_phi[i])); */
+   /*   } */
+
 
    /* s=action(); */
    /* m=magnet(); */
@@ -264,8 +272,18 @@ int main(int argc, char **argv)
    /* printf("\n\n"); */
    /* printf("%d updates took %f sec.\n\n",nsweep,seconds()-iStart); */
 
+
+
    memcpy(phi, initial_phi, nvol*sizeof(spin)); /* restore phi */
+   /* printf("i phi init_phi\n"); */
+   /* for (int i=0; i<nvol; i++) */
+   /*   { */
+   /*     printf("%d, %f, %f\n", i, cuCabs(phi[i]), cuCabs(initial_phi[i])); */
+   /*   } */
    gpu_stuff(nsweep);
+
+
+
 
 
    free(lsize);

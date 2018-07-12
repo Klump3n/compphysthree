@@ -71,6 +71,7 @@ double metro_sweep_alt(double delta, int *evenArray, int *oddArray, double *rnd)
       evenIndex = evenArray[idx];
       acc+=update_spin(evenIndex,rnd,delta,NTRIAL);
       rnd+=(3*NTRIAL);
+      /* printf("%d, %d\n", idx, acc); */
     }
 
   int oddIndex = 0;
@@ -79,6 +80,7 @@ double metro_sweep_alt(double delta, int *evenArray, int *oddArray, double *rnd)
       oddIndex = oddArray[idx];
       acc+=update_spin(oddIndex,rnd,delta,NTRIAL);
       rnd+=(3*NTRIAL);
+      /* printf("%d, %d\n", idx, acc); */
     }
 
   return ((double)(acc) / (double)(nvol*NTRIAL));

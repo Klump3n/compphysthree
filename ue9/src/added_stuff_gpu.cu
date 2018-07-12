@@ -57,7 +57,7 @@ double gpu_sweep(
   blockSize.z = 1;
 
   dim3 gridSize;
-  gridSize.x = ceil((float) nvol/ (float) 256);
+  gridSize.x = ceil((float) nvol / (float) 256);
   gridSize.y = 1;
   gridSize.z = 1;
 
