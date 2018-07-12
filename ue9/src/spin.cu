@@ -101,5 +101,7 @@ double alocal(int idx)
 {
    compute_b(idx);
 
+   /* printf("CPU %d: %f\n", idx, cuCabs(b)); */
+
    return alocal2(idx);
 }

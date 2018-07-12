@@ -77,24 +77,28 @@ void gpu_stuff(int nsweep)
   CHECK(cudaMalloc((void**)&d_nn,nvol*(2*ndim+1)*sizeof(int)));
   CHECK(cudaMemcpy(d_nn, nn[0], nvol*(2*ndim+1)*sizeof(int), cudaMemcpyHostToDevice));
 
-  CHECK(cudaMemcpyToSymbol(devLambda, &lambda, sizeof(double)));
+  /* CHECK(cudaMalloc((void**)&devLambda,sizeof(double))); */
+
+  /* CHECK(cudaMemcpyToSymbol(devLambda, &lambda, sizeof(double))); */
+  CHECK(cudaMemcpyToSymbol(devLambda, &lambda, sizeof(double *), 0, cudaMemcpyHostToDevice));
   CHECK(cudaMemcpyToSymbol(devKappa, &kappa, sizeof(double)));
   CHECK(cudaMemcpyToSymbol(devNdim, &ndim, sizeof(int)));
   CHECK(cudaMemcpyToSymbol(devNvol, &nvol, sizeof(int)));
 
   int halfArrayLength = ceil((float) (nvol) / 2.);
 
+
   int *evenArray = (int *) calloc(halfArrayLength, sizeof(int));
   int *oddArray = (int *) calloc(halfArrayLength, sizeof(int));
   evenOddIndices(evenArray, oddArray);
-
+  
   int *d_evenArray;
   CHECK(cudaMalloc((void**)&d_evenArray, halfArrayLength * sizeof(int)));
   CHECK(cudaMemcpy(d_evenArray, evenArray, halfArrayLength * sizeof(int), cudaMemcpyHostToDevice));
   int *d_oddArray;
   CHECK(cudaMalloc((void**)&d_oddArray, halfArrayLength * sizeof(int)));
   CHECK(cudaMemcpy(d_oddArray, oddArray, halfArrayLength * sizeof(int), cudaMemcpyHostToDevice));
-
+  
   spin *d_bEvenArray;
   CHECK(cudaMalloc((void**)&d_bEvenArray, halfArrayLength * sizeof(spin)));
   CHECK(cudaMemset(d_bEvenArray, 0, halfArrayLength * sizeof(spin)));
@@ -123,15 +127,15 @@ void gpu_stuff(int nsweep)
   CHECK(cudaMemset(d_aloc_calc, 0, halfArrayLength * sizeof(double)));
 
   /* NTRIAL IS 10!!! */
-  double *d_rnd = randgpu_device_ptr(3*nvol*10);
+  double *d_rnd = randgpu_device_ptr(3*nvol*10*nsweep);
 
-  double *rnd = (double *) calloc(nvol, sizeof(double));
-  CHECK(cudaMemcpy(rnd, d_rnd, nvol*3*10*sizeof(double), cudaMemcpyDeviceToHost));
+  double *rnd = (double *) calloc(nvol*3*10*nsweep, sizeof(double));
+  CHECK(cudaMemcpy(rnd, d_rnd, nvol*3*10*nsweep*sizeof(double), cudaMemcpyDeviceToHost));
   /* for (int i=0; i<nvol*30; i++) */
   /*   { */
   /*     printf("%d, %f\n", i, doublearray[i]); */
   /*   } */
-
+  
   spin m, gpu_m;
   double mm, gpu_mm;
 
@@ -142,17 +146,20 @@ void gpu_stuff(int nsweep)
   double cpu_acc = 0.0;
 
   spin *backup_phi = (spin *) malloc(nvol*sizeof(spin));
+  double cpuStart, cpuTime, gpuStart, gpuTime;
 
   printf("ITER \t ACC \t\t ACC_C \t\t DELTA \t\t DELTA_C \t GPU_MM \t CPU_MM\n");
   for (int i=1; i<=nsweep; i++)
     {
+      cpuStart = seconds();
+      cpu_acc = metro_sweep_alt(cpu_delta, evenArray, oddArray, rnd);
+      cpuTime = seconds() - cpuStart;
+      cpu_delta=tune_delta(cpu_acc,cpu_delta);
 
-//      cpu_acc = metro_sweep_alt(cpu_delta, evenArray, oddArray, rnd);
-//      cpu_delta=tune_delta(cpu_acc,cpu_delta);
-//
-//      m=magnet();
-//      mm=cuCabs(m)*cuCabs(m);
+      m=magnet();
+      mm=cuCabs(m)*cuCabs(m);
 
+      gpuStart = seconds();
       acc=gpu_sweep(d_phi,
                     d_evenArray,
                     d_oddArray,
@@ -166,11 +173,13 @@ void gpu_stuff(int nsweep)
                     d_rnd,
                     delta
                     );
+      gpuTime = seconds() - gpuStart;
 
-//      memcpy(backup_phi, phi, nvol*sizeof(spin)); /* keep original phi */
-//      CHECK(cudaMemcpy(phi, d_phi, nvol*sizeof(spin), cudaMemcpyDeviceToHost));
+      d_rnd+=3*10*nvol;
+      memcpy(backup_phi, phi, nvol*sizeof(spin)); /* keep original phi */
+      CHECK(cudaMemcpy(phi, d_phi, nvol*sizeof(spin), cudaMemcpyDeviceToHost));
       gpu_m = magnet();
-//      memcpy(phi, backup_phi, nvol*sizeof(spin)); /* restore phi */
+      memcpy(phi, backup_phi, nvol*sizeof(spin)); /* restore phi */
 
       gpu_mm=cuCabs(gpu_m)*cuCabs(gpu_m);
 
@@ -178,6 +187,7 @@ void gpu_stuff(int nsweep)
 
       /* printf("%d\t %f\t %f\t %f\t %f\t %f\t %f\n",i,acc,delta,s,cuCreal(m),cuCimag(m),mm); */
 
+      printf("cpu: %f, gpu: %f\n", cpuTime, gpuTime);
       printf("%d \t %f \t %f \t %f \t %f \t %f \t %f \n", i, acc, cpu_acc, delta, cpu_delta, gpu_mm, mm);
     }
 
@@ -185,7 +195,7 @@ void gpu_stuff(int nsweep)
 
 int main(int argc, char **argv)
 {
-   printf("%s Starting...\n", argv[0]);
+  printf("%s Starting...\n", argv[0]);
 
    int i, nsweep;
    double acc, delta, s, iStart, mm, phi0, reh;
@@ -243,6 +253,7 @@ int main(int argc, char **argv)
 
    spin *initial_phi = (spin *) malloc(nvol*sizeof(spin));
    memcpy(initial_phi, phi, nvol*sizeof(spin)); /* keep original phi */
+
    /* printf("i phi init_phi\n"); */
    /* for (int i=0; i<nvol; i++) */
    /*   { */
@@ -274,16 +285,12 @@ int main(int argc, char **argv)
 
 
 
+   /* warmup */
    memcpy(phi, initial_phi, nvol*sizeof(spin)); /* restore phi */
-   /* printf("i phi init_phi\n"); */
-   /* for (int i=0; i<nvol; i++) */
-   /*   { */
-   /*     printf("%d, %f, %f\n", i, cuCabs(phi[i]), cuCabs(initial_phi[i])); */
-   /*   } */
    gpu_stuff(nsweep);
-
-
-
+   /* time this stuff */
+   memcpy(phi, initial_phi, nvol*sizeof(spin)); /* restore phi */
+   gpu_stuff(nsweep);
 
 
    free(lsize);
