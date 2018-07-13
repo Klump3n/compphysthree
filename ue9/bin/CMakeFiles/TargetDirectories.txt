@@ -1,0 +1,4 @@
+/users/stud/ledwon/Documents/compphysthree/ue9/bin/CMakeFiles/rebuild_cache.dir
+/users/stud/ledwon/Documents/compphysthree/ue9/bin/CMakeFiles/edit_cache.dir
+/users/stud/ledwon/Documents/compphysthree/ue9/bin/CMakeFiles/run.dir
+/users/stud/ledwon/Documents/compphysthree/ue9/bin/CMakeFiles/check.dir

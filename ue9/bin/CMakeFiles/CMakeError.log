@@ -1,0 +1,55 @@
+Determining if the pthread_create exist failed with the following output:
+Change Dir: /users/stud/ledwon/Documents/compphysthree/ue9/bin/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_d4184/fast"
+/usr/bin/make -f CMakeFiles/cmTC_d4184.dir/build.make CMakeFiles/cmTC_d4184.dir/build
+make[1]: Entering directory '/users/stud/ledwon/Documents/compphysthree/ue9/bin/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_d4184.dir/CheckSymbolExists.c.o
+/usr/bin/clang-3.8    -fPIC    -o CMakeFiles/cmTC_d4184.dir/CheckSymbolExists.c.o   -c /users/stud/ledwon/Documents/compphysthree/ue9/bin/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+Linking C executable cmTC_d4184
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_d4184.dir/link.txt --verbose=1
+/usr/bin/clang-3.8  -fPIC     CMakeFiles/cmTC_d4184.dir/CheckSymbolExists.c.o  -o cmTC_d4184 -rdynamic 
+CMakeFiles/cmTC_d4184.dir/CheckSymbolExists.c.o: In function `main':
+/users/stud/ledwon/Documents/compphysthree/ue9/bin/CMakeFiles/CMakeTmp/CheckSymbolExists.c:(.text+0x7): undefined reference to `pthread_create'
+clang: error: linker command failed with exit code 1 (use -v to see invocation)
+CMakeFiles/cmTC_d4184.dir/build.make:97: recipe for target 'cmTC_d4184' failed
+make[1]: *** [cmTC_d4184] Error 1
+make[1]: Leaving directory '/users/stud/ledwon/Documents/compphysthree/ue9/bin/CMakeFiles/CMakeTmp'
+Makefile:126: recipe for target 'cmTC_d4184/fast' failed
+make: *** [cmTC_d4184/fast] Error 2
+
+File /users/stud/ledwon/Documents/compphysthree/ue9/bin/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <pthread.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef pthread_create
+  return ((int*)(&pthread_create))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+
+Determining if the function pthread_create exists in the pthreads failed with the following output:
+Change Dir: /users/stud/ledwon/Documents/compphysthree/ue9/bin/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_4d791/fast"
+/usr/bin/make -f CMakeFiles/cmTC_4d791.dir/build.make CMakeFiles/cmTC_4d791.dir/build
+make[1]: Entering directory '/users/stud/ledwon/Documents/compphysthree/ue9/bin/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_4d791.dir/CheckFunctionExists.c.o
+/usr/bin/clang-3.8    -fPIC -DCHECK_FUNCTION_EXISTS=pthread_create   -o CMakeFiles/cmTC_4d791.dir/CheckFunctionExists.c.o   -c /usr/share/cmake-3.7/Modules/CheckFunctionExists.c
+Linking C executable cmTC_4d791
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_4d791.dir/link.txt --verbose=1
+/usr/bin/clang-3.8  -fPIC -DCHECK_FUNCTION_EXISTS=pthread_create    CMakeFiles/cmTC_4d791.dir/CheckFunctionExists.c.o  -o cmTC_4d791 -rdynamic -lpthreads 
+/usr/bin/ld: cannot find -lpthreads
+clang: error: linker command failed with exit code 1 (use -v to see invocation)
+CMakeFiles/cmTC_4d791.dir/build.make:97: recipe for target 'cmTC_4d791' failed
+make[1]: *** [cmTC_4d791] Error 1
+make[1]: Leaving directory '/users/stud/ledwon/Documents/compphysthree/ue9/bin/CMakeFiles/CMakeTmp'
+Makefile:126: recipe for target 'cmTC_4d791/fast' failed
+make: *** [cmTC_4d791/fast] Error 2
+
+
