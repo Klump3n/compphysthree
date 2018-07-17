@@ -1,0 +1,112 @@
+\documentclass[10pt,a4paper]{article}
+%]{report}
+
+\usepackage[a4paper, top=2cm, bottom=2.5cm, left=3cm, right=3cm]{geometry}
+%\usepackage[
+%    vmarginratio=2:2.5, %Verhï¿½ltnis der oben/unten Seitenrï¿½nder zur automatischen Berechnung
+%    paper=a4paper,
+%    lmargin=3cm, % mittlerer Rand
+%    rmargin=3cm, % ï¿½uï¿½erer Rand
+%    marginparwidth=2.3cm, % Breite des Marginpars
+%    includehead, % Kopfzeile in Berechnung einbeziehen
+%    includemp % Marginpar in die Berechnung mit einbeziehen
+%]{geometry}
+%\setlength\marginparwidth{2.3cm} %Die wird spï¿½ter zum Rechnen gebraucht, wird aber durch die Angabe im geometry package nicht automatisch richtig gesetzt.
+
+
+%============================================================
+% Pakete
+%============================================================
+
+\usepackage[english, ngerman]{babel}    % mehrsprachiger Textsatz
+\usepackage[utf8]{inputenc}       % Eingabekodierung Parameter latin1 darf geï¿½ndert werden
+\usepackage[T1]{fontenc}                % Schriftenkodierung
+\usepackage{graphicx}                       % zum Einbinden von Grafiken
+                                                                % zum besseren Aussehen am Bildschirm
+%\usepackage{verbatimfiles}	% Ganze Dateien als Verbatim einbinden
+% \usepackage{programs}	% Ganze Dateien als Verbatim einbinden
+%\usepackage{hyphsubst}		% Silbentrennung
+%%\usepackage{xcolor,soul}
+%%\usepackage{float}				%Sachen an der richtigen Stelle ausgeben
+%\restylefloat{figure}				%Abbildungen an der richtigen Stelle ausgeben
+%\restylefloat{table}				%Tabellen an der richtigen Stelle ausgeben
+%\usepackage{array}				%fï¿½r Tabellen
+%\newcolumntype{C}{>{$}c<{$}} 	%Tabellenspalten C mit mathematischem Inhalt
+% \usepackage{subfigure}
+
+
+
+
+% Code-Listings print source code
+% Mathe-Pakete
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amsthm}		% Theorem-Umgebung, Beweise
+\usepackage{amssymb}
+\usepackage{cancel}
+\usepackage{mathcomp}
+
+
+%============================================================
+% Titel, Autor, Datum
+%============================================================
+\title{Übung 10 \\Computational Physics III}
+\author{Matthias Plock (552335) \and Paul Ledwon (561764)} %\\Otto Normalverbraucher (271828)}
+\date{\today}
+
+%============================================================
+% Dokument
+%============================================================
+\begin{document}
+
+% Titel erstellen
+\maketitle
+\tableofcontents
+
+\pagenumbering{arabic}
+\pagestyle{myheadings}                  % bzw. ist fancyhdr zu benutzten
+
+\subsection{Betrachtungen zum Parameter $R(L)$}
+
+Für die Magnetisierung gilt im Falle großer Systeme für die unterschiedlichen
+Phasen
+
+\begin{align*}
+<|M|^2>\overset{L\to\infty}{=}
+\begin{cases}
+\chi\, L^{-d} &  \text{ungeordnet/paramagnetisch/symmetrisch}\\
+\text{const}\, L^{-\eta} & \text{Kosterlitz–Thouless} \\
+|M_0|^2 & \text{ferromagnetisch/Goldstone}
+\end{cases}
+\end{align*}
+
+Damit ergibt sich
+\begin{align*}
+R(L)=\frac{<|M|^2>_{2L}}{<|M|^2>_{L}}=\overset{L\to\infty}{=}
+\begin{cases}
+ 2^{-d}&  \text{ungeordnet/paramagnetisch/symmetrisch}\\
+ 2^{-\eta}& \text{Kosterlitz–Thouless} \\
+1 & \text{ferromagnetisch/Goldstone}
+\end{cases}
+\end{align*}
+Hierbei ist $d$ die Dimension des Systems und $\eta=\sigma(\frac{1}{\kappa})$
+bzw. im XY-Modell $\eta=\frac{1}{4 \pi \kappa}$.
+
+\subsection{Betrachtungen zum Fehler von $R(L)$}
+
+Für die gaußsche Fehlerfortpflanzung ist eine Normalverteilung des Fehlers
+der unterschiedlichen Größen, sowie die Unkorreliertheit der verschiedenen
+Größen notwendig.\\
+Im Gegensatz zum Binderparameter, der aus Größen aus derselben Messung
+berechnet wird und diese dadurch korreliert sind, wird der Parameter $R(L)$
+aus Messwerten zwei verschiedener Messungen berechnet, wodurch keine
+Korrelation vorliegt. Durch die Normalverteilung der Fehler ist es darum
+möglich, zur Bestimmung des Fehlers von $R(L)$ eine Fehlerfortpflanzung
+durchzuführen.
+
+
+
+
+
+
+\end{document}
