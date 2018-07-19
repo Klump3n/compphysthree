@@ -81,7 +81,7 @@ double thermalize(double delta, int nsweep, int use_gpu)
 
 int main(int argc, char **argv)
 {
-   printf("%s Starting...\n", argv[0]);
+//   printf("%s Starting...\n", argv[0]);
 
    int i, nsweep,use_gpu;
    double acc, delta, s, iStart, mm, phi0, reh, s2;
@@ -110,34 +110,34 @@ int main(int argc, char **argv)
    h=make_spin(reh,0.0);
 
    // print out parameters
-   printf("Gittergroesse: %d",lsize[1]);
-   for (i=2; i<=ndim; i++)
-   {
-      printf(" x %d",lsize[i]);
-   }
-   printf("\n\n");
-   printf("gpu    = %d\n",use_gpu);
-   printf("nsweep = %d\n",nsweep);
-   printf("lambda = %f\n",lambda);
-   printf("kappa  = %f\n",kappa);
-   printf("delta  = %f\n",delta);
-   printf("h      = %f + I %f\n",cuCreal(h),cuCimag(h));
-   if (phi0==0.0)
-      printf("phi    = random\n");
-   else
-      printf("phi    = %f + I %f\n",phi0,0.0);
-   printf("\n\n");
+ //  printf("Gittergroesse: %d",lsize[1]);
+  // for (i=2; i<=ndim; i++)
+  // {
+  //    printf(" x %d",lsize[i]);
+  // }
+  // printf("\n\n");
+  // printf("gpu    = %d\n",use_gpu);
+  // printf("nsweep = %d\n",nsweep);
+  // printf("lambda = %f\n",lambda);
+  // printf("kappa  = %f\n",kappa);
+  // printf("delta  = %f\n",delta);
+  // printf("h      = %f + I %f\n",cuCreal(h),cuCimag(h));
+  // if (phi0==0.0)
+  //    printf("phi    = random\n");
+  // else
+  //    printf("phi    = %f + I %f\n",phi0,0.0);
+  // printf("\n\n");
 
    // set up geometry
    geom_pbc();
    set_eo();
 
    // allocate spins, set random values
-   printf("Initalize spins... ");
+   //printf("Initalize spins... ");
    iStart=seconds();
    phi=(spin*)malloc(nvol*sizeof(spin));
    init_phi(phi0);
-   printf("%f sec.\n\n",seconds()-iStart);
+   //printf("%f sec.\n\n",seconds()-iStart);
 
    if (use_gpu)
    {
@@ -145,13 +145,13 @@ int main(int argc, char **argv)
    }
 
    // thermalize
-   printf("Thermalize spins... ");
+   //printf("Thermalize spins... ");
    iStart=seconds();
    delta=thermalize(delta,NTHERM,use_gpu);
-   printf("%f sec.\n\n",seconds()-iStart);
+   //printf("%f sec.\n\n",seconds()-iStart);
 
    // Measurements
-   printf("Measurements...\n\n");
+   //printf("Measurements...\n\n");
    // Initialisierung des Statistikmoduls, vier Observablen
    clear5(4,500);
 
@@ -159,7 +159,7 @@ int main(int argc, char **argv)
    m=magnet();
    mm=cuCabs(m)*cuCabs(m);
 
-   printf("UPD\t A       \t S       \t RE(M)   \t IM(M)   \t |M|^2   \n");
+   //printf("UPD\t A       \t S       \t RE(M)   \t IM(M)   \t |M|^2   \n");
 
    acc=0.0;
    s2=0.0;
@@ -174,7 +174,7 @@ int main(int argc, char **argv)
       s=action();
       m=magnet();
       mm=cuCabs(m)*cuCabs(m);
-      printf("%d\t %f\t %f\t %f\t %f\t %f\n",i,acc,s,cuCreal(m),cuCimag(m),mm);
+    //  printf("%d\t %f\t %f\t %f\t %f\t %f\n",i,acc,s,cuCreal(m),cuCimag(m),mm);
       // Messwerte für Auswertung speichern
       accum5(1,s);
       accum5(2,cuCreal(m));
@@ -186,16 +186,16 @@ int main(int argc, char **argv)
    s2/=(double)nsweep;
    s2=sqrt((s2-aver5(1)*aver5(1))/(double)nsweep);
 
-   printf("\n\n");
-   printf("%d updates took %f sec. [sqrt(var(S)/N): %f, check: %f]\n\n",
-                  nsweep,seconds()-iStart,s2,s2*sqrt(2.0*tauint5(1)));
-
-   // Mittelwert, Fehler, Auto-Korrelationszeit
-   printf("           Mittelwert, Fehler, integr. Auto-Korrelationszeit\n");
-   printf(" S:        %f, %f, %f\n",aver5(1),sigma5(1),tauint5(1));
-   printf(" RE(M):    %f, %f, %f\n",aver5(2),sigma5(2),tauint5(2));
-   printf(" IM(M):    %f, %f, %f\n",aver5(3),sigma5(3),tauint5(3));
-   printf(" |M|^2:    %f, %f, %f\n",aver5(4),sigma5(4),tauint5(4));
+  // printf("\n\n");
+  // printf("%d updates took %f sec. [sqrt(var(S)/N): %f, check: %f]\n\n",
+  //                nsweep,seconds()-iStart,s2,s2*sqrt(2.0*tauint5(1)));
+//
+  // // Mittelwert, Fehler, Auto-Korrelationszeit
+  // printf("           Mittelwert, Fehler, integr. Auto-Korrelationszeit\n");
+  // printf(" S:        %f, %f, %f\n",aver5(1),sigma5(1),tauint5(1));
+  // printf(" RE(M):    %f, %f, %f\n",aver5(2),sigma5(2),tauint5(2));
+  // printf(" IM(M):    %f, %f, %f\n",aver5(3),sigma5(3),tauint5(3));
+   printf(/*" |M|^2:    %f,*/" %f, %f\n",aver5(4),sigma5(4));
 
    free(lsize);
    free(nn[0]);

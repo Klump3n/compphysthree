@@ -1,0 +1,1 @@
+/usr/bin/clang++-3.8      CMakeFiles/run.dir/run_generated_run.cu.o CMakeFiles/run.dir/run_generated_geom_pbc.cu.o CMakeFiles/run.dir/run_generated_spin.cu.o CMakeFiles/run.dir/run_generated_metropolis.cu.o CMakeFiles/run.dir/run_generated_randgpu.cu.o CMakeFiles/run.dir/run_generated_stat5.cu.o  -o run -rdynamic -Wl,-Bstatic -lcudart_static -Wl,-Bdynamic -lpthread -ldl -lrt 

@@ -1,0 +1,22 @@
+#!/bin/bash
+
+echo "Measurements for 4 dimensions"  > 4_d_measurements.txt
+for L_one in 4 5 6  #12 #16
+  do
+  echo L = $L_one, Mag, MagErr >> 4_d_measurements.txt
+    for kappa in 0.00 0.025 0.05 0.075 0.1 0.125 0.15 0.175 0.2 0.225 0.25 0.275 0.3 0.325 0.35 #0.375 0.4 0.425 0.45 0.475 0.5 0.525 0.55 0.575 0.6
+    do
+      ../src/run 1.0 $kappa 0.0 0.0 500 1 $L_one $L_one $L_one $L_one >>4_d_measurements.txt
+
+    done
+  done
+
+for L_two in 8 10 12 #24 #32
+  do
+  echo 2L = $L_two, Mag, MagErr >> 4_d_measurements.txt
+    for kappa in 0.00 0.025 0.05 0.075 0.1 0.125 0.15 0.175 0.2 0.225 0.25 0.275 0.3 0.325 0.35 #0.375 0.4 0.425 0.45 0.475 0.5 0.525 0.55 0.575 0.6
+    do
+      ../src/run 1.0 $kappa 0.0 0.0 500 1 $L_two $L_two $L_two $L_two >> 4_d_measurements.txt
+
+    done
+  done
