@@ -1,0 +1,25 @@
+#!/bin/bash
+
+echo "Convergence for Dimension 3,4 (and even 5 :D !)"  > conv_nd.txt
+
+for L_one in 4 6 8
+  do
+    echo $L_one: >> conv_nd.txt
+      ../src/run 1.0 0.05 0.0 0.0 500 1 $L_one $L_one $L_one >>conv_nd.txt #d=3
+      ../src/run 1.0 0.05 0.0 0.0 500 1 $L_one $L_one $L_one $L_one >>conv_nd.txt #d=4
+  done
+
+for L_two in 8 12
+  do
+   echo 2L = $L_two  >> conv_nd.txt
+      ../src/run 1.0 0.05 0.0 0.0 500 1 $L_two $L_two $L_two >>conv_nd.txt #d=3
+      ../src/run 1.0 0.05 0.0 0.0 500 1 $L_two $L_two $L_two $L_two >>conv_nd.txt #d=4
+  done
+
+   echo 2L = 16  >> conv_nd.txt
+      ../src/run 1.0 0.05 0.0 0.0 500 1 16 16 16 >>conv_nd.txt #d=3
+
+   echo L = 4, dim=5  >> conv_nd.txt
+      ../src/run 1.0 0.05 0.0 0.0 500 1 2 2 2 2 2 >>conv_nd.txt #d=5
+   echo 2L = 8  >> conv_nd.txt
+      ../src/run 1.0 0.05 0.0 0.0 500 1 4 4 4 4 4 >>conv_nd.txt #d=5

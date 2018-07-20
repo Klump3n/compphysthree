@@ -1,0 +1,22 @@
+
+#!/bin/bash
+
+echo "Convergence for 2 dimensions"  > conv_2d.txt
+
+for L_one in 16 20 32
+  do
+    echo $L_one: >> conv_2d.txt
+    for kappa in 0.5 0.525 0.55 0.575 0.6 0.625 0.65 0.675 0.7 0.725 0.75 0.775 0.8
+    do
+      ../src/run 1.0 $kappa 0.0 0.0 1000 1 $L_one $L_one >>conv_2d.txt
+    done
+  done
+
+for L_two in 32 40 64
+  do
+   echo 2L = $L_two, Mag, MagErr  >> conv_2d.txt
+    for kappa in 0.5 0.525 0.55 0.575 0.6 0.625 0.65 0.675 0.7 0.725 0.75 0.775 0.8
+     do
+      ../src/run 1.0 $kappa 0.0 0.0 1000 1 $L_two $L_two >> conv_2d.txt
+     done
+  done
