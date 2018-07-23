@@ -117,13 +117,14 @@ bestimmt werden, dass die paramagnetische und ferromagnetische Phase voneinander
 trennt. Die Werte von $R$ schneiden sich jedoch mehr als einmal, weswegen diese
 Methode nicht angewendet wurde. Stattdessen wurde aus den Plots das $\kappa_c$
 aus den Sprüngen abgelesen, welche die beiden Phasen voneinander trennen.
+Da die Werte für $\kappa$ abgelesen werden, wird ein großer Fehler abgeschätzt.
 \newpage
 Damit ergibt sich für die kritischen $\kappa$ ungefähr
 
 \begin{align*}
-  \kappa_{c,2d} &= 0.425 \\
-  \kappa_{c,3d} &= 0.25 \\
-  \kappa_{c,4d} &= 0.175
+  \kappa_{c,2d} &= 0.425 \pm 0.25 \\
+  \kappa_{c,3d} &= 0.25 \pm 0.25\\
+  \kappa_{c,4d} &= 0.175 \pm 0.25
 \end{align*}
 
 
@@ -152,20 +153,45 @@ Im XY-Modell wird für $R(L)$ in 2 Dimensionen in der Kosterlitz-Thouless-Phase
 und große Systeme folgendes Konvergenzverhalten erwartet:
 $R= 2^{-\frac{1}{4\pi \kappa}}$
 
-Für verschiedene Systemgrößen und für $\kappa=0.5>\kappa_c$ wurde die Magnetisierung
-gemessen und $R$ berechnet und graphisch dargestellt, siehe Abb. \ref{fig:c2d}.
+Für verschiedene Systemgrößen und $\kappa > \kappa_c$ und  wurde die Magnetisierung
+gemessen, daraus $R$ berechnet und graphisch dargestellt,
+siehe Abb. \ref{fig:c2d}. Qualitativ  scheinen die
+Datenpunkte der analytischen Angabe für $R$ zu folgen, auch
+wenn viele Datenpunkte auch innerhalb ihrer Unsicherheiten
+nicht in den Bereich der des analytischen $R$ kommen. Dafür
+warum
+die 3 Datenpunkte bei einer Systemgröße von $L=32$ so weit
+entfernt vom erwarteten $R$ Wert liegen, konnte keine Erklärung gefunden werden.
 
 \begin{figure}
   \centering
   \includegraphics[width=\textwidth]{../figures/conv_2d.pdf}
-  \caption{Konvergenzverhalten $R$ fuer grosse Systeme in Abhaengigkeit von $\kappa$}\label{fig:c2d}
+  \caption{Konvergenzverhalten von $R$ für große 2D-Systeme in Abhängigkeit von $\kappa$}\label{fig:c2d}
 \end{figure}
 
-\subsection{Hoehere Dimensionen}
+
+
+\subsection{Höhere Dimensionen}
+
+Für verschiedene Systemgrößen und für
+$\kappa=0.05<\kappa_c$ wurde die Magnetisierung
+gemessen und $R$ berechnet und graphisch dargestellt,
+siehe Abb. \ref{fig:cnd}.
+Aufgrund der Tatsache, dass mit der Dimension die Anzahl
+der zu generierenden Zufallszahlen steigt, kann für höhere
+Dimensionen keine so großen $L$ gewählt werden, da dies zu
+Speicherproblemen führte.
+Die Datenpunkte folgen qualitativ dem erwarteten Verhalten
+$R=2^{-d}$, liegen aber nicht immer im Rahmen ihrer
+Unsicherheit im Bereich des analytischen Wertes.
+Möglicherweise sind die gewählten $L$-Werte noch zu
+niedrig, damit der Limes $L \rightarrow \infty$ gilt.
+
+
 \begin{figure}
   \centering
   \includegraphics[width=\textwidth]{../figures/conv_nd.pdf}
-  \caption{Konvergenzverhalten $R$ fuer grosse Systeme in Abhaengigkeit von $\kappa$}\label{fig:cnd}
+  \caption{Konvergenzverhalten $R$ für große Systeme in Abhängigkeit von der Dimension des Systems}\label{fig:cnd}
 \end{figure}
 
 \end{document}
